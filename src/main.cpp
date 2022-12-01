@@ -7,5 +7,6 @@ int main() {
     // show game window
     // load a game from file (.gb)
     // play game
-    return 0;
+    // test
+    return 1;
 }
