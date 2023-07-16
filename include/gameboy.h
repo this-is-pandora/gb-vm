@@ -1,7 +1,6 @@
-#ifndef CPU_H
-#define CPU_H
+#pragma once
 #include <cstdint>
-#include "./opcodes.h"
+#include "cpu.h"
 
 /* 
 * GameBoy has 8 8-bit registers (A,B,C,...,H,L)
@@ -15,28 +14,14 @@
 * val: Z   N   H   C   0   0   0   0
 * PC (program counter) points to the next instruction to be executed
 * SP (stack pointer) - stores current stack position
+* the maximum ROM size for a game is 32kB, but with MBC's, we can play games of larger sizes
 */
 
+// the emulator itself
 class GameBoy {
     public:
-        uint8_t A,B,C,D,E,F,H,L = 0;
-        uint16_t SP = 0xFFFE;
-        uint16_t PC = 0x100;
-        uint8_t memory[8000]; // 8kB of memory
-    
-        bool isPaused = false;
-        bool isHalted = false;
-        bool usingBootROM = false;
-
-        void initialize();
-        void loadGame();
-        void saveGame();
-        void emulateCycle();
-        void fetch();
-        void decode();
-        void execute();
-        
-        void run(); // start the emulator
+        GameBoy();
+        ~GameBoy();
+        void createInstance();
+        void loadROM(); 
 };
-
-#endif

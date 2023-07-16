@@ -1,5 +1,4 @@
-#ifndef GRAPHICS_H
-#define GRAPHICS_H
+#pragma once
 
 #define SCREEN_WIDTH 160
 #define SCREEN_HEIGHT 144
@@ -8,4 +7,13 @@
 #define MAX_SPRITES_PER_LINE 10
 //TODO: graphics stuff
 
-#endif
+class Screen {
+    private:
+        uint8_t screenData[SCREEN_WIDTH][SCREEN_HEIGHT][3];
+    public:
+        Screen() {
+            screenData[160/2][144/2][0] = 0xFF;
+            screenData[160/2][144/2][1] = 0;
+            screenData[160/2][144/2][2] = 0;
+        }
+};

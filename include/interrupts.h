@@ -1,5 +1,4 @@
-#ifndef INTERRUPT_H
-#define INTERRUPT_H
+#pragma once
 enum Interrupts {
     VBLANK,
     LCDC,
@@ -9,5 +8,3 @@ enum Interrupts {
 };
 
 //TODO: define some interrupt routines
-
-#endif

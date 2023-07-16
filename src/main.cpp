@@ -1,12 +1,23 @@
-#include "include/gameboy.h"
-
+#include <iostream>
+#include "./include/cpu.h"
+#include "./include/memory.h"
+#include "./include/gameboy.h"
+#include "./include/graphics.h"
 using namespace std;
 
-int main() {
+// takes in a rom file as an argument
+// command line example: gb tetris.rom
+// max game size is 0x200000
+int main(int argc, char *argv[]) {
     // initialize the gameboy and its components
-    // show game window
+    uint8_t screenW = 160;
+    uint8_t screenH = 144;
+
+    // initiate emulator
     // load a game from file (.gb)
+    // create game window
+    // run game loop
     // play game
-    // test
+    // exit
     return 1;
 }
