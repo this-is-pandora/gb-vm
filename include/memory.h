@@ -1,6 +1,9 @@
 #pragma once
 #include <stdint.h>
+#include <stack>
 #include <memory>
+#include <cstring>
+#include <string>
 // total RAM size: 0xFFFF
 
 // work RAM: 0xC000 - 0xDFFF
@@ -10,50 +13,64 @@
 // IO: 0xFF00 -
 // hram: 0xFF80 - 0xFFFE
 
-// addresses of memory parts
-
-//32kB cartridge (ROM bank + switchable ROM bank) i.e. where the game is loaded
-#define ROM_BANK 0x0000 // to (16kB ROM BANK #0)
-#define SWITCH_ROM_BANK 0x4000 // to (16kB switchable ROM bank)
-
-#define VRAM 0x8000 // to 0x9FFF
-#define SWITCH_RAM_BANK 0xA000 // to 
-#define MRAM 0xC000 // to 0xDFFF (work RAM)
-#define ECHO_RAM 0xE000 // to 0x9FFF
-#define OAM 0xFE00 // to (Sprite Atrib Memory)
-#define EMPTY_UNUSUBLE_IO_1 0xFEA0 // to
-#define IO_PORTS 0xFF00 // to 
-#define EMPTY_UNUSABLE_IO_2 0xFF4C // to
-#define HRAM 0xFF80 //to 0xFFFE (HRAM)
-#define IER 0xFFFF //to (Interrupt Enable Register)
-
-//TODO reserved memory locations
+enum MemorySegments {
+    CARTRIDGE_ROM,
+    VRAM,
+    CARTRIDGE_RAM,
+    WRAM_0,
+    WRAM_N,
+    OAM,
+    IO_HRAM_IE,
+    NO_SEGMENT
+};
 
 //TODO: implement a Memory class
-class Memory {
-    private:        
-        //TODO: assign these varaibles their proper types
-        int mbc = 0;
-        int mbc_mode = 0;
-        int rom_bank = 1;
-        int rom_banks = 0;
-        int ram_exists = 0;
-        int ram_enable = 0;
-        int ram_bank = 0;
-        int ram_banks = 0;
-
+class MMU {
+    private:
+        uint8_t rom_bank_no; // always 1 or above, never 0
+        uint8_t ram_bank_no;
+        // in the cartridge
+        uint8_t m_rom_banks[0x200000];
+        // 4 RAM banks * 0x2000 bytes each = 0x8000 total
+        uint8_t m_ram_banks[0x8000];
         uint8_t m_ROM[0x10000];
+
+        bool MBC1, MBC2, MBC3;
+        bool enable_ram;
+        bool rom_banking;
+        bool ime;
+
     public:
+        void loadROM(char* rom);
+        void checkMBC();
+
+        void enableRAMBank(uint16_t addr, uint8_t value);
+        void changeROMBank(uint8_t value);
+        void changeLowROMBank(uint8_t value);
+        void changeHighROMBank(uint8_t value);
+        void changeRAMBank(uint8_t value);
+        void switchModes(uint8_t value);
+        void handleBanking(uint16_t addr, uint8_t value);
+
         //read & write
         void writeByte(uint16_t addr, uint8_t value);
         void writeWord(uint16_t addr, uint16_t value);
         uint8_t readByte(uint16_t addr);
         uint16_t readWord(uint16_t addr);
+        // increment divider register
+        void incDIV();
+        //direct memory access
+        void DMATransfer(uint8_t value);
         // stack methods
-        void push();
-        void pop();
+        void push(uint16_t value, uint16_t& sp);
+        uint16_t pop(uint16_t& sp);
         
-        Memory() {
+        MMU() {
+            rom_bank_no = 1;
+            ram_bank_no = 0;
+            enable_ram = false;
+            memset(&m_ram_banks, 0, sizeof(m_ram_banks));
+
             m_ROM[0xFF05] = 0x00;
             m_ROM[0xFF06] = 0x00;
             m_ROM[0xFF05] = 0x00;

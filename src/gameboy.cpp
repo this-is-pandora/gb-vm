@@ -1,28 +1,29 @@
 #include "include/gameboy.h"
 
-void GameBoy::write(uint8_t addr, uint8_t value) {
-    if (addr < 0x8000) {
-        // read-only memory so do nothing
-    }
-    else if ((addr >= 0xE000) && (addr < 0xFE00)) {
-        // write to echo RAM
-    }
-    else if ((addr >= 0xFEA0) && (addr < 0xFEFF)) {
-        // restricted area
-    }
-    else {
-        //memory->rom[addr] = value;
-    }
+
+GameBoy::GameBoy() {
+    memory = new MMU();
+    timer = new Timer();
+    cpu = new CPU(memory);
+    // ppu = new PPU();
+    // jp = new JoyPad();
+    //TODO: etc.
 }
 
 void GameBoy::update() {
     const int MAX_CYCLES = 69905;
-    int current_cycles = 0; // current # of cycles
+    int current_cycles = 0;
+    // emulation loop
     while (current_cycles < MAX_CYCLES) {
-        //uint8_t opcode = cpu->fetch();
-        //int cycles = cpu->execute();
+        // int cycles = executeNextOpcode();
+        // current_cycles += cycles;
+        // updateTimer();
+        // updateGraphics();
+        // handleInterrupts();
     }
+    //renderGraphics();
 }
+/*
 void GameBoy::game_loop() {
     // halt
     // nop
@@ -31,4 +32,4 @@ void GameBoy::game_loop() {
     // buttons
     // game operation
     // repeat
-}
+} */

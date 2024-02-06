@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "memory.h";
 
 // memory addresses
 #define dividerRegister 0xFF04 // divider
@@ -9,7 +10,8 @@
 
 // 1 machine cycle = 4 clock cycles
 // clock speed = 4.19MHz
-// the timer controller has various selectable frequencies
+
+// the timer controller (TMA) has various selectable frequencies
 // for the timer (TIMA) to count up to
 // these are: 4096Hz, 262144Hz, 65536Hz, 16384Hz
 
@@ -24,12 +26,14 @@ class Timer {
     private:
         int frequencies[4] = {4096, 262144, 65536, 16384};
         int frequency;
-        int timerCounter = CLOCKSPEED/frequency; // 1024
-        CPU *cpu;
+
+        // timer coutner is 1024 by default
+        // 4194304/4096 = 1024
+        int timerCounter = CLOCKSPEED/frequency; // 
     public:
-        Timer(int frequency, CPU& cpu);
-        void update();
-        bool clockEnabled();
-        uint8_t readClockFrequency();
-        void setClockFrequency();
+        Timer();
+        void tick(int cycles);
+        bool clockEnabled(uint8_t tmc);
+        uint8_t readClockFrequency(uint8_t tima);
+        void setClockFrequency(uint8_t tima);
 };

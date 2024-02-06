@@ -1,8 +1,12 @@
 #include <iostream>
 #include "./include/cpu.h"
 #include "./include/memory.h"
-#include "./include/gameboy.h"
+#include "./include/timer.h"
+#include "./include/interrupts.h"
+#include "./include/joypad.h"
 #include "./include/graphics.h"
+#include "./include/gameboy.h"
+
 using namespace std;
 
 // takes in a rom file as an argument
