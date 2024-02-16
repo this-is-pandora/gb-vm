@@ -2,7 +2,8 @@
 
 #define IER 0xFF0F // interrupt request register
 
-enum Interrupts {
+enum Interrupts
+{
     VBLANK,
     LCD,
     TIMER,
@@ -10,7 +11,11 @@ enum Interrupts {
     JOYPAD
 };
 
-//TODO: define interrupt routines
+class Interrupt
+{
+};
+
+// TODO: define interrupt routines
 void requestInterrupt(int id);
 void checkInterrupt();
 void serviceInterrupt();

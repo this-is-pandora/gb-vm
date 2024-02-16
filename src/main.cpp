@@ -1,4 +1,5 @@
-#include <iostream>
+// #include SDL2
+
 #include "./include/cpu.h"
 #include "./include/memory.h"
 #include "./include/timer.h"
@@ -9,13 +10,18 @@
 
 using namespace std;
 
+const int fps = 60;
+
 // takes in a rom file as an argument
 // command line example: gb tetris.rom
 // max game size is 0x200000
-int main(int argc, char *argv[]) {
-    // initialize the gameboy and its components
-    uint8_t screenW = 160;
-    uint8_t screenH = 144;
+int main(int argc, char *argv[])
+{
+    // MMU *memory = new MMU();
+    // CPU *cpu = new CPU(memory);
+    // Timer timer;
+    // GUI *screen
+    // GPU *gpu;
 
     // initiate emulator
     // load a game from file (.gb)

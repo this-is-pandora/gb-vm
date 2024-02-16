@@ -1,8 +1,7 @@
 #pragma once
 #include <stdint.h>
-#include <vector>
-#include "interrupts.h"
-#include "timer.h"
+// #include "interrupts.h"
+//  #include "timer.h"
 #include "memory.h"
 
 using namespace std;
@@ -15,11 +14,6 @@ using namespace std;
 #define FLAG_N 6 // subtract
 #define FLAG_H 5 // half carry
 #define FLAG_C 4 // carry
-/*
-struct Clock {
-    uint8_t t_cycles = 0;
-    uint8_t m_cycles = 0; // machine cycles
-}; */
 
 union Register
 {
@@ -35,6 +29,7 @@ union Register
 // only 1 step gets executed every 4 ticks
 // 4 clock cycles = 1 machine cycles
 // clock speed in machine cycles ~= 1.05 MHz
+
 class CPU
 {
 private:
@@ -72,46 +67,46 @@ private:
     bool debugMode;
 
     // CPU control methods
-    void CPU_NOP(uint8_t cycles); // no operation
-    int CPU_STOP();               // halt CPU & LCD display until button pressed
-    int CPU_CPL();                // complement A
-    int CPU_CCF();                // complement carry flag
-    int CPU_SCF();                // set carry flag
-    int CPU_DAA();                // decimal adjust register A
-    int CPU_HALT();               // power down CPU until an interrupt occurs
-    int CPU_DI();                 // disable interrupts
-    int CPU_EI();                 // enable interrupts
+    void CPU_NOP(); // no operation
+    int CPU_STOP(); // halt CPU & LCD display until button pressed
+    int CPU_CPL();  // complement A
+    int CPU_CCF();  // complement carry flag
+    int CPU_SCF();  // set carry flag
+    int CPU_DAA();  // decimal adjust register A
+    int CPU_HALT(); // power down CPU until an interrupt occurs
+    int CPU_DI();   // disable interrupts
+    int CPU_EI();   // enable interrupts
 
     // 8-bit data manipulation
-    void CPU_REG_LD(uint8_t &reg, uint8_t load, uint8_t cycles);      // register to register
-    void CPU_REG_ROM_LD(uint8_t &reg, uint16_t addr, uint8_t cycles); // memory to register loads
-    void CPU_ROM_REG_LD(uint16_t addr, uint8_t reg, uint8_t cycles);  // register to memory load
-    void CPU_REG_IMM_LD(uint8_t &reg, uint8_t imm, uint8_t cycles);   // immediate into register
+    void CPU_REG_LD(uint8_t &reg, uint8_t load);      // register to register
+    void CPU_REG_ROM_LD(uint8_t &reg, uint16_t addr); // memory to register loads
+    void CPU_ROM_REG_LD(uint16_t addr, uint8_t reg);  // register to memory load
+    void CPU_REG_IMM_LD(uint8_t &reg, uint8_t imm);   // immediate into register
     // 8-bit
-    void CPU_8BIT_LD(uint8_t &reg, uint8_t cycles);
-    void CPU_8BIT_ADD(uint8_t &reg, uint8_t add, uint8_t cycles, bool useImmediate, bool addCarry);
-    void CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, uint8_t cycles, bool useImmediate, bool subCarry);
-    void CPU_8BIT_INC(uint8_t &reg, uint8_t cycles);
-    void CPU_8BIT_MEM_INC(uint16_t addr, uint8_t cycles);
-    void CPU_8BIT_DEC(uint8_t &reg, uint8_t cycles);
-    void CPU_8BIT_MEM_DEC(uint16_t addr, uint8_t cycles);
-    void CPU_8BIT_CP(uint8_t &reg, uint8_t cp, uint8_t cycles);
-    void CPU_8BIT_AND(uint8_t &reg, uint8_t operand, uint8_t cycles, bool useImmediate);
-    void CPU_8BIT_OR(uint8_t &reg, uint8_t operand, uint8_t cycles, bool useImmediate);
-    void CPU_8BIT_XOR(uint8_t &reg, uint8_t operand, uint8_t cycles, bool useImmediate);
-    void CPU_8BIT_ADC(uint8_t reg, uint8_t cycles);
+    void CPU_8BIT_LD(uint8_t &reg);
+    void CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCarry);
+    void CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, bool useImmediate, bool subCarry);
+    void CPU_8BIT_INC(uint8_t &reg);
+    void CPU_8BIT_MEM_INC(uint16_t addr);
+    void CPU_8BIT_DEC(uint8_t &reg);
+    void CPU_8BIT_MEM_DEC(uint16_t addr);
+    void CPU_8BIT_CP(uint8_t &reg, uint8_t cp);
+    void CPU_8BIT_AND(uint8_t &reg, uint8_t operand, bool useImmediate);
+    void CPU_8BIT_OR(uint8_t &reg, uint8_t operand, bool useImmediate);
+    void CPU_8BIT_XOR(uint8_t &reg, uint8_t operand, bool useImmediate);
+    void CPU_8BIT_ADC(uint8_t reg);
     // 16-bit
-    void CPU_16BIT_LD(uint16_t &reg, uint8_t cycles);
-    void CPU_16BIT_REG_LD(uint16_t &reg, uint16_t src, uint8_t cycles); // 16-bit register-to-register load
-    void CPU_16BIT_ROM_LD(uint16_t addr, uint16_t src, uint8_t cycles); // reg to memory
-    void CPU_16BIT_ADD(uint16_t &reg, uint16_t add, uint8_t cycles);
-    void CPU_16BIT_SUB(uint16_t &reg, uint16_t sub, uint8_t cycles);
-    void CPU_16BIT_INC(uint16_t &reg, uint8_t cycles);
-    void CPU_16BIT_DEC(uint16_t &reg, uint8_t cycles);
-    void CPU_SBC(uint8_t reg, uint8_t cycles);
+    void CPU_16BIT_LD(uint16_t &reg);
+    void CPU_16BIT_REG_LD(uint16_t &reg, uint16_t src); // 16-bit register-to-register load
+    void CPU_16BIT_ROM_LD(uint16_t addr, uint16_t src); // reg to memory
+    void CPU_16BIT_ADD(uint16_t &reg, uint16_t add);
+    void CPU_16BIT_SUB(uint16_t &reg, uint16_t sub);
+    void CPU_16BIT_INC(uint16_t &reg);
+    void CPU_16BIT_DEC(uint16_t &reg);
+    void CPU_SBC(uint8_t reg);
     // stack
-    void CPU_PUSH(Register reg, uint8_t cycles); // push into stack
-    void CPU_POP(Register &reg, uint8_t cycles); // pop stack into reg
+    void CPU_PUSH(Register reg); // push into stack
+    void CPU_POP(Register &reg); // pop stack into reg
     // rotates & shifts
     void CPU_RLA();
     void CPU_RRCA();
@@ -125,16 +120,16 @@ private:
     void CPU_SRA();
     void CPU_SRL();
     // bit opcodes
-    void CPU_BIT(uint8_t &n, uint8_t r, int cycles); // test bit
-    void CPU_SET(uint8_t &n, uint8_t r, int cycles); // set bit
-    void CPU_RES(uint8_t &n, uint8_t r, int cycles); // reset bit
+    void CPU_BIT(uint8_t &n, uint8_t r); // test bit
+    void CPU_SET(uint8_t &n, uint8_t r); // set bit
+    void CPU_RES(uint8_t &n, uint8_t r); // reset bit
     // jumps
     void CPU_JP(uint16_t addr);
     void CPU_JR(int8_t n);
     // calls
     void CPU_CALL(uint16_t nn);
     // restarts
-    void CPU_RST(uint8_t n, int cycles);
+    void CPU_RST(uint8_t n);
     // returns
     void CPU_RET();
     void CPU_RETI();
@@ -144,26 +139,24 @@ private:
     void executeExtendedOpcode(); // if opcode starts w/ 0xCB
 
 public:
-    CPU(MMU *mmu);
+    CPU(MMU *mmu = NULL);
     ~CPU();
 
     // flag methods
     bool getZeroFlag() const;
-    void setZeroFlag();
+    void setZeroFlag(bool val);
     bool getSubtractFlag() const;
-    void setSubtractFlag();
+    void setSubtractFlag(bool val);
     bool getCarryFlag() const;
-    void setCarryFlag();
+    void setCarryFlag(bool val);
     bool getHalfCarryFlag() const;
-    void setHalfCarryFlag();
+    void setHalfCarryFlag(bool val);
     void setFlags(bool flag_z, bool flag_n, bool flag_h, bool flag_c);
 
     // read memory
-    uint8_t read(uint16_t addr);
     uint8_t readByte(uint16_t addr);
     uint16_t readWord(uint16_t addr);
     // write memory
-    void write(uint16_t addr);
     void writeWord(uint16_t, uint16_t data); // write to memory
     void writeByte(uint16_t addr, uint8_t data);
     // check for & handle interrupts

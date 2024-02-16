@@ -46,9 +46,28 @@ bool CPU::getZeroFlag() const
 {
     return (AF.lo & FLAG_MASK_Z) ? true : false;
 }
+void CPU::setZeroFlag(bool val)
+{
+    if (val)
+    {
+    }
+    else
+    {
+    }
+}
+
 bool CPU::getSubtractFlag() const
 {
     return (AF.lo & FLAG_MASK_N) ? true : false;
+}
+void CPU::setSubtractFlag(bool val)
+{
+    if (val)
+    {
+    }
+    else
+    {
+    }
 }
 
 bool CPU::getCarryFlag() const
@@ -56,14 +75,35 @@ bool CPU::getCarryFlag() const
     return (AF.lo & FLAG_MASK_C) ? true : false;
 }
 
+void CPU::setCarryFlag(bool val)
+{
+    if (val)
+    {
+    }
+    else
+    {
+    }
+}
+
 bool CPU::getHalfCarryFlag() const
 {
     return (AF.lo & FLAG_MASK_H) ? true : false;
 }
 
+void CPU::setHalfCarryFlag(bool val)
+{
+    if (val)
+    {
+    }
+    else
+    {
+    }
+}
+
 uint8_t CPU::fetch()
 {
-    return memory->readByte(pc++);
+    uint8_t data = memory->readByte(pc++);
+    return data;
     // return m_ROM[pc++];
 }
 
@@ -72,24 +112,24 @@ int CPU::execute(uint8_t opcode)
     switch (opcode)
     {
     case 0x00: // NOP
-        CPU_NOP;
+        CPU_NOP();
         break;
     case 0x01: // ld bc, imm
-        CPU_16BIT_LD(BC.value, op_cycles[opcode]);
+        CPU_16BIT_LD(BC.value);
         break;
     case 0x02: // ld (bc), a
-        CPU_ROM_REG_LD(BC.value, AF.hi, op_cycles[opcode]);
+        CPU_ROM_REG_LD(BC.value, AF.hi);
         break;
     case 0x03:
-        CPU_16BIT_INC(BC.value, op_cycles[opcode]);
+        CPU_16BIT_INC(BC.value);
         break;
     case 0x04:
-        CPU_8BIT_INC(BC.hi, op_cycles[opcode]);
+        CPU_8BIT_INC(BC.hi);
     case 0x05:
-        CPU_8BIT_DEC(BC.hi, op_cycles[opcode]);
+        CPU_8BIT_DEC(BC.hi);
         break;
     case 0x06:
-        CPU_8BIT_LD(BC.hi, op_cycles[opcode]);
+        CPU_8BIT_LD(BC.hi);
         break;
     case 0x07: // RLCA
         CPU_RLCA();
@@ -102,7 +142,7 @@ int CPU::execute(uint8_t opcode)
             nn |= readWord(pc);
             pc += 2;
             nn++;
-            CPU_16BIT_ROM_LD(nn, sp, op_cycles[opcode]); */
+            CPU_16BIT_ROM_LD(nn, sp); */
         uint16_t nn = readWord(pc);
         pc += 2;
         writeByte(nn++, sp);
@@ -110,22 +150,22 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0x09:
-        CPU_16BIT_ADD(HL.value, BC.value, op_cycles[opcode]);
+        CPU_16BIT_ADD(HL.value, BC.value);
         break;
     case 0x0A:
-        CPU_REG_ROM_LD(AF.hi, BC.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(AF.hi, BC.value);
         break;
     case 0x0B:
-        CPU_16BIT_DEC(BC.value, op_cycles[opcode]);
+        CPU_16BIT_DEC(BC.value);
         break;
     case 0x0C:
-        CPU_8BIT_INC(BC.lo, op_cycles[opcode]);
+        CPU_8BIT_INC(BC.lo);
         break;
     case 0x0D:
-        CPU_8BIT_DEC(BC.lo, op_cycles[opcode]);
+        CPU_8BIT_DEC(BC.lo);
         break;
     case 0x0E:
-        CPU_8BIT_LD(BC.lo, op_cycles[opcode]);
+        CPU_8BIT_LD(BC.lo);
         break;
     case 0x0F:
         CPU_RRCA();
@@ -135,22 +175,22 @@ int CPU::execute(uint8_t opcode)
         CPU_STOP();
         break;
     case 0x11: // LD DE, nn
-        CPU_16BIT_LD(DE.value, op_cycles[opcode]);
+        CPU_16BIT_LD(DE.value);
         break;
     case 0x12: // LD (DE), A
-        CPU_ROM_REG_LD(DE.value, AF.hi, op_cycles[opcode]);
+        CPU_ROM_REG_LD(DE.value, AF.hi);
         break;
     case 0x13:
-        CPU_16BIT_INC(DE.value, op_cycles[opcode]);
+        CPU_16BIT_INC(DE.value);
         break;
     case 0x14:
-        CPU_8BIT_INC(DE.hi, op_cycles[opcode]);
+        CPU_8BIT_INC(DE.hi);
         break;
     case 0x15:
-        CPU_8BIT_DEC(DE.hi, op_cycles[opcode]);
+        CPU_8BIT_DEC(DE.hi);
         break;
     case 0x16:
-        CPU_8BIT_LD(DE.hi, op_cycles[opcode]);
+        CPU_8BIT_LD(DE.hi);
         break;
     case 0x17:
         CPU_RLA();
@@ -162,22 +202,22 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0x19:
-        CPU_16BIT_ADD(HL.value, DE.value, op_cycles[opcode]);
+        CPU_16BIT_ADD(HL.value, DE.value);
         break;
     case 0x1A:
-        CPU_REG_ROM_LD(AF.hi, DE.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(AF.hi, DE.value);
         break;
     case 0x1B:
-        CPU_16BIT_DEC(DE.value, op_cycles[opcode]);
+        CPU_16BIT_DEC(DE.value);
         break;
     case 0x1C:
-        CPU_8BIT_INC(DE.lo, op_cycles[opcode]);
+        CPU_8BIT_INC(DE.lo);
         break;
     case 0x1D:
-        CPU_8BIT_DEC(DE.lo, op_cycles[opcode]);
+        CPU_8BIT_DEC(DE.lo);
         break;
     case 0x1E:
-        CPU_8BIT_LD(DE.lo, op_cycles[opcode]);
+        CPU_8BIT_LD(DE.lo);
         break;
     case 0x1F:
         CPU_RRA();
@@ -192,24 +232,24 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0x21:
-        CPU_16BIT_LD(HL.value, op_cycles[opcode]);
+        CPU_16BIT_LD(HL.value);
     case 0x22:
     {
-        CPU_ROM_REG_LD(HL.value, AF.hi, op_cycles[opcode]);
-        CPU_16BIT_INC(HL.value, 0);
+        CPU_ROM_REG_LD(HL.value, AF.hi);
+        CPU_16BIT_INC(HL.value);
     }
     break;
     case 0x23:
-        CPU_16BIT_INC(HL.value, op_cycles[opcode]);
+        CPU_16BIT_INC(HL.value);
         break;
     case 0x24:
-        CPU_8BIT_INC(HL.hi, op_cycles[opcode]);
+        CPU_8BIT_INC(HL.hi);
         break;
     case 0x25:
-        CPU_8BIT_DEC(HL.hi, op_cycles[opcode]);
+        CPU_8BIT_DEC(HL.hi);
         break;
     case 0x26:
-        CPU_8BIT_LD(HL.hi, op_cycles[opcode]);
+        CPU_8BIT_LD(HL.hi);
         break;
     case 0x27: // decimal adjust register A (DAA)
         CPU_DAA();
@@ -224,25 +264,25 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0x29:
-        CPU_16BIT_ADD(HL.value, HL.value, op_cycles[opcode]);
+        CPU_16BIT_ADD(HL.value, HL.value);
         break;
     case 0x2A:
     {
-        CPU_REG_ROM_LD(AF.hi, HL.value, op_cycles[opcode]);
-        CPU_16BIT_INC(HL.value, 0);
+        CPU_REG_ROM_LD(AF.hi, HL.value);
+        CPU_16BIT_INC(HL.value);
     }
     break;
     case 0x2B:
-        CPU_16BIT_DEC(HL.value, op_cycles[opcode]);
+        CPU_16BIT_DEC(HL.value);
         break;
     case 0x2C:
-        CPU_8BIT_INC(HL.lo, op_cycles[opcode]);
+        CPU_8BIT_INC(HL.lo);
         break;
     case 0x2D:
-        CPU_8BIT_DEC(HL.lo, op_cycles[opcode]);
+        CPU_8BIT_DEC(HL.lo);
         break;
     case 0x2E:
-        CPU_8BIT_LD(HL.lo, op_cycles[opcode]);
+        CPU_8BIT_LD(HL.lo);
         break;
     case 0x2F:
         CPU_CPL();
@@ -257,26 +297,26 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0x31:
-        CPU_16BIT_LD(sp, op_cycles[opcode]);
+        CPU_16BIT_LD(sp);
     case 0x32: // LD (HLD),A
     {
-        CPU_ROM_REG_LD(HL.value, AF.hi, op_cycles[opcode]);
-        CPU_16BIT_DEC(HL.value, 0);
+        CPU_ROM_REG_LD(HL.value, AF.hi);
+        CPU_16BIT_DEC(HL.value);
     }
     break;
     case 0x33:
-        CPU_16BIT_INC(sp, op_cycles[opcode]);
+        CPU_16BIT_INC(sp);
         break;
     case 0x34: // TODO: check
     {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_INC(n, op_cycles[opcode]);
+        CPU_8BIT_INC(n);
     }
     break;
     case 0x35: // TODO: FIX
     {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_DEC(n, op_cycles[opcode]);
+        CPU_8BIT_DEC(n);
     }
     break;
     case 0x36: // TODO
@@ -284,7 +324,7 @@ int CPU::execute(uint8_t opcode)
         uint8_t n = readByte(pc);
         pc++;
         writeByte(HL.value, n);
-        // clockCycles += op_cycles[opcode];
+        // clockCycles +;
     }
     break;
     case 0x37: // TODO
@@ -300,418 +340,434 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0x39:
-        CPU_16BIT_ADD(HL.value, sp, op_cycles[opcode]);
+        CPU_16BIT_ADD(HL.value, sp);
         break;
     case 0x3A: // LD A,(HLD)
     {
-        CPU_REG_LD(AF.hi, HL.value, op_cycles[opcode]);
-        CPU_16BIT_DEC(HL.value, 0);
+        CPU_REG_LD(AF.hi, HL.value);
+        CPU_16BIT_DEC(HL.value);
     }
     break;
     case 0x3B:
-        CPU_16BIT_DEC(sp, op_cycles[opcode]);
+        CPU_16BIT_DEC(sp);
         break;
     case 0x3C:
-        CPU_8BIT_INC(AF.hi, op_cycles[opcode]);
+        CPU_8BIT_INC(AF.hi);
         break;
     case 0x3D:
-        CPU_8BIT_DEC(AF.hi, op_cycles[opcode]);
+        CPU_8BIT_DEC(AF.hi);
         break;
     case 0x3E:
     {
         uint8_t n = readByte(pc);
         AF.hi = n;
         pc++;
-        // clockCycles += op_cycles[opcode];
+        // clockCycles +;
     }
     break;
     case 0x3F:
         CPU_CCF();
         break;
     case 0x40:
-        CPU_REG_LD(BC.hi, BC.hi, op_cycles[opcode]);
+        CPU_REG_LD(BC.hi, BC.hi);
         break;
     case 0x41:
-        CPU_REG_LD(BC.hi, BC.lo, op_cycles[opcode]);
+        CPU_REG_LD(BC.hi, BC.lo);
         break;
     case 0x42:
-        CPU_REG_LD(BC.hi, DE.hi, op_cycles[opcode]);
+        CPU_REG_LD(BC.hi, DE.hi);
         break;
     case 0x43:
-        CPU_REG_LD(BC.hi, DE.lo, op_cycles[opcode]);
+        CPU_REG_LD(BC.hi, DE.lo);
         break;
     case 0x44:
-        CPU_REG_LD(BC.hi, HL.hi, op_cycles[opcode]);
+        CPU_REG_LD(BC.hi, HL.hi);
         break;
     case 0x45:
-        CPU_REG_LD(BC.hi, HL.lo, op_cycles[opcode]);
+        CPU_REG_LD(BC.hi, HL.lo);
         break;
     case 0x46:
-        CPU_REG_ROM_LD(BC.hi, HL.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(BC.hi, HL.value);
         break;
-    case 0x47:
+    // case 0x47:
     case 0x48:
-        CPU_REG_LD(BC.lo, BC.hi, op_cycles[opcode]);
+        CPU_REG_LD(BC.lo, BC.hi);
         break;
     case 0x49:
-        CPU_REG_LD(BC.lo, BC.lo, op_cycles[opcode]);
+        CPU_REG_LD(BC.lo, BC.lo);
         break;
     case 0x4A:
-        CPU_REG_LD(BC.lo, DE.hi, op_cycles[opcode]);
+        CPU_REG_LD(BC.lo, DE.hi);
         break;
     case 0x4B:
-        CPU_REG_LD(BC.lo, DE.lo, op_cycles[opcode]);
+        CPU_REG_LD(BC.lo, DE.lo);
         break;
     case 0x4C:
-        CPU_REG_LD(BC.lo, HL.hi, op_cycles[opcode]);
+        CPU_REG_LD(BC.lo, HL.hi);
         break;
     case 0x4D:
-        CPU_REG_LD(BC.lo, HL.lo, op_cycles[opcode]);
+        CPU_REG_LD(BC.lo, HL.lo);
         break;
     case 0x4E:
-        CPU_REG_ROM_LD(BC.lo, HL.value, op_cycles[opcode]); // ld C, (HL)
+        CPU_REG_ROM_LD(BC.lo, HL.value); // ld C, (HL)
         break;
     case 0x4F: // LD C,A
-        CPU_REG_LD(BC.lo, AF.hi, op_cycles[opcode]);
+        CPU_REG_LD(BC.lo, AF.hi);
         break;
     case 0x50: // LD D,B
-        CPU_REG_LD(DE.hi, BC.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.hi, BC.hi);
         break;
     case 0x51:
-        CPU_REG_LD(DE.hi, BC.lo, op_cycles[opcode]);
+        CPU_REG_LD(DE.hi, BC.lo);
         break;
     case 0x52:
-        CPU_REG_LD(DE.hi, DE.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.hi, DE.hi);
         break;
     case 0x53:
-        CPU_REG_LD(DE.hi, DE.lo, op_cycles[opcode]);
+        CPU_REG_LD(DE.hi, DE.lo);
         break;
     case 0x54:
-        CPU_REG_LD(DE.hi, HL.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.hi, HL.hi);
         break;
     case 0x55:
-        CPU_REG_LD(DE.hi, HL.lo, op_cycles[opcode]);
+        CPU_REG_LD(DE.hi, HL.lo);
         break;
     case 0x56:
-        CPU_REG_ROM_LD(DE.hi, HL.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(DE.hi, HL.value);
         break;
     case 0x57:
-        CPU_REG_LD(DE.hi, AF.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.hi, AF.hi);
         break;
     case 0x58:
-        CPU_REG_LD(DE.lo, BC.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.lo, BC.hi);
         break;
     case 0x59:
-        CPU_REG_LD(DE.lo, BC.lo, op_cycles[opcode]);
+        CPU_REG_LD(DE.lo, BC.lo);
         break;
     case 0x5A:
-        CPU_REG_LD(DE.lo, DE.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.lo, DE.hi);
         break;
     case 0x5B:
-        CPU_REG_LD(DE.lo, DE.lo, op_cycles[opcode]);
+        CPU_REG_LD(DE.lo, DE.lo);
         break;
     case 0x5C:
-        CPU_REG_LD(DE.lo, HL.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.lo, HL.hi);
         break;
     case 0x5D:
-        CPU_REG_LD(DE.lo, HL.lo, op_cycles[opcode]);
+        CPU_REG_LD(DE.lo, HL.lo);
         break;
     case 0x5E:
-        CPU_REG_ROM_LD(DE.lo, HL.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(DE.lo, HL.value);
         break;
     case 0x5F: // LD E,A
-        CPU_REG_LD(DE.lo, AF.hi, op_cycles[opcode]);
+        CPU_REG_LD(DE.lo, AF.hi);
         break;
     case 0x60: // LD H,B
-        CPU_REG_LD(HL.hi, BC.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.hi, BC.hi);
         break;
     case 0x61: // LD H,C
-        CPU_REG_LD(HL.hi, BC.lo, op_cycles[opcode]);
+        CPU_REG_LD(HL.hi, BC.lo);
         break;
     case 0x62: // LD H,D
-        CPU_REG_LD(HL.hi, DE.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.hi, DE.hi);
         break;
     case 0x63: // LD H,E
-        CPU_REG_LD(HL.hi, DE.lo, op_cycles[opcode]);
+        CPU_REG_LD(HL.hi, DE.lo);
         break;
     case 0x64: // LD H,H
-        CPU_REG_LD(HL.hi, HL.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.hi, HL.hi);
         break;
     case 0x65:
-        CPU_REG_LD(HL.hi, HL.lo, op_cycles[opcode]);
+        CPU_REG_LD(HL.hi, HL.lo);
         break;
     case 0x66:
-        CPU_REG_ROM_LD(HL.hi, HL.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(HL.hi, HL.value);
         break;
     case 0x67: // LD H,A
-        CPU_REG_LD(HL.hi, AF.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.hi, AF.hi);
         break;
     case 0x68:
-        CPU_REG_LD(HL.lo, BC.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.lo, BC.hi);
         break;
     case 0x69:
-        CPU_REG_LD(HL.lo, BC.lo, op_cycles[opcode]);
+        CPU_REG_LD(HL.lo, BC.lo);
         break;
     case 0x6A:
-        CPU_REG_LD(HL.lo, DE.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.lo, DE.hi);
         break;
     case 0x6B:
-        CPU_REG_LD(HL.lo, DE.lo, op_cycles[opcode]);
+        CPU_REG_LD(HL.lo, DE.lo);
         break;
     case 0x6C:
-        CPU_REG_LD(HL.lo, HL.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.lo, HL.hi);
         break;
     case 0x6D:
-        CPU_REG_LD(HL.lo, HL.lo, op_cycles[opcode]);
+        CPU_REG_LD(HL.lo, HL.lo);
         break;
     case 0x6E:
-        CPU_REG_ROM_LD(HL.lo, HL.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(HL.lo, HL.value);
         break;
     case 0x6F: // LD L,A
-        CPU_REG_LD(HL.lo, AF.hi, op_cycles[opcode]);
+        CPU_REG_LD(HL.lo, AF.hi);
         break;
     case 0x70: // LD (HL),B
-        CPU_ROM_REG_LD(HL.value, BC.hi, op_cycles[opcode]);
+        CPU_ROM_REG_LD(HL.value, BC.hi);
         break;
     case 0x71:
-        CPU_ROM_REG_LD(HL.value, BC.lo, op_cycles[opcode]);
+        CPU_ROM_REG_LD(HL.value, BC.lo);
         break;
     case 0x72:
-        CPU_ROM_REG_LD(HL.value, DE.hi, op_cycles[opcode]);
+        CPU_ROM_REG_LD(HL.value, DE.hi);
         break;
     case 0x73:
-        CPU_ROM_REG_LD(HL.value, DE.lo, op_cycles[opcode]);
+        CPU_ROM_REG_LD(HL.value, DE.lo);
         break;
     case 0x74:
-        CPU_ROM_REG_LD(HL.value, HL.hi, op_cycles[opcode]);
+        CPU_ROM_REG_LD(HL.value, HL.hi);
         break;
     case 0x75:
-        CPU_ROM_REG_LD(HL.value, HL.lo, op_cycles[opcode]);
+        CPU_ROM_REG_LD(HL.value, HL.lo);
         break;
     case 0x76: // TODO halt
         // state = HALTED;
         CPU_HALT();
         break;
     case 0x77:
-        CPU_ROM_REG_LD(HL.value, AF.hi, op_cycles[opcode]);
+        CPU_ROM_REG_LD(HL.value, AF.hi);
         break;
     case 0x78:
-        CPU_REG_LD(AF.hi, BC.hi, op_cycles[opcode]);
+        CPU_REG_LD(AF.hi, BC.hi);
         break;
     case 0x79:
-        CPU_REG_LD(AF.hi, BC.lo, op_cycles[opcode]);
+        CPU_REG_LD(AF.hi, BC.lo);
         break;
     case 0x7A:
-        CPU_REG_LD(AF.hi, DE.hi, op_cycles[opcode]);
+        CPU_REG_LD(AF.hi, DE.hi);
         break;
     case 0x7B:
-        CPU_REG_LD(AF.hi, DE.lo, op_cycles[opcode]);
+        CPU_REG_LD(AF.hi, DE.lo);
         break;
     case 0x7C:
-        CPU_REG_LD(AF.hi, HL.hi, op_cycles[opcode]);
+        CPU_REG_LD(AF.hi, HL.hi);
         break;
     case 0x7D:
-        CPU_REG_LD(AF.hi, HL.lo, op_cycles[opcode]);
+        CPU_REG_LD(AF.hi, HL.lo);
         break;
     case 0x7E:
-        CPU_REG_ROM_LD(AF.hi, HL.value, op_cycles[opcode]);
+        CPU_REG_ROM_LD(AF.hi, HL.value);
         break;
     case 0x7F:
-        CPU_REG_LD(AF.hi, AF.hi, op_cycles[opcode]);
+        CPU_REG_LD(AF.hi, AF.hi);
         break;
     case 0x80:
-        CPU_8BIT_ADD(AF.hi, BC.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_ADD(AF.hi, BC.hi, false, false);
         break;
     case 0x81:
-        CPU_8BIT_ADD(AF.hi, BC.lo, op_cycles[opcode], false, false);
+        CPU_8BIT_ADD(AF.hi, BC.lo, false, false);
         break;
     case 0x82:
-        CPU_8BIT_ADD(AF.hi, DE.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_ADD(AF.hi, DE.hi, false, false);
         break;
     case 0x83:
-        CPU_8BIT_ADD(AF.hi, DE.lo, op_cycles[opcode], false, false);
+        CPU_8BIT_ADD(AF.hi, DE.lo, false, false);
         break;
     case 0x84:
-        CPU_8BIT_ADD(AF.hi, HL.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_ADD(AF.hi, HL.hi, false, false);
         break;
     case 0x85:
-        CPU_8BIT_ADD(AF.hi, HL.lo, op_cycles[opcode], false, false);
+        CPU_8BIT_ADD(AF.hi, HL.lo, false, false);
         break;
     case 0x86: // TODO: ADD A, (HL)
+    {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_ADD(AF.hi, n, op_cycles[opcode], false, false);
-        break;
+        CPU_8BIT_ADD(AF.hi, n, false, false);
+    }
+    break;
     case 0x87:
-        CPU_8BIT_ADD(AF.hi, AF.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_ADD(AF.hi, AF.hi, false, false);
         break;
     case 0x88:
-        CPU_8BIT_ADC(BC.hi, op_cycles[opcode]);
+        CPU_8BIT_ADC(BC.hi);
         break;
     case 0x89:
-        CPU_8BIT_ADC(BC.lo, op_cycles[opcode]);
+        CPU_8BIT_ADC(BC.lo);
         break;
     case 0x8A:
-        CPU_8BIT_ADC(DE.hi, op_cycles[opcode]);
+        CPU_8BIT_ADC(DE.hi);
         break;
     case 0x8B:
-        CPU_8BIT_ADC(DE.lo, op_cycles[opcode]);
+        CPU_8BIT_ADC(DE.lo);
         break;
     case 0x8C:
-        CPU_8BIT_ADC(HL.hi, op_cycles[opcode]);
+        CPU_8BIT_ADC(HL.hi);
         break;
     case 0x8D:
-        CPU_8BIT_ADC(HL.lo, op_cycles[opcode]);
+        CPU_8BIT_ADC(HL.lo);
         break;
     case 0x8E: // TODO: ADC A, (HL)
+    {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_ADC(n, op_cycles[opcode]);
-        break;
+        CPU_8BIT_ADC(n);
+    }
+    break;
     case 0x8F:
-        CPU_8BIT_ADC(AF.hi, op_cycles[opcode]);
+        CPU_8BIT_ADC(AF.hi);
         break;
     case 0x90:
-        CPU_8BIT_SUB(AF.hi, BC.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_SUB(AF.hi, BC.hi, false, false);
         break;
     case 0x91:
-        CPU_8BIT_SUB(AF.hi, BC.lo, op_cycles[opcode], false, false);
+        CPU_8BIT_SUB(AF.hi, BC.lo, false, false);
         break;
     case 0x92:
-        CPU_8BIT_SUB(AF.hi, DE.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_SUB(AF.hi, DE.hi, false, false);
         break;
     case 0x93:
-        CPU_8BIT_SUB(AF.hi, DE.lo, op_cycles[opcode], false, false);
+        CPU_8BIT_SUB(AF.hi, DE.lo, false, false);
         break;
     case 0x94:
-        CPU_8BIT_SUB(AF.hi, HL.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_SUB(AF.hi, HL.hi, false, false);
         break;
     case 0x95:
-        CPU_8BIT_SUB(AF.hi, HL.lo, op_cycles[opcode], false, false);
+        CPU_8BIT_SUB(AF.hi, HL.lo, false, false);
         break;
     case 0x96:
+    {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_SUB(AF.hi, n, op_cycles[opcode], false, false);
-        break;
+        CPU_8BIT_SUB(AF.hi, n, false, false);
+    }
+    break;
     case 0x97:
-        CPU_8BIT_SUB(AF.hi, AF.hi, op_cycles[opcode], false, false);
+        CPU_8BIT_SUB(AF.hi, AF.hi, false, false);
         break;
     case 0x98:
-        CPU_SBC(BC.hi, op_cycles[opcode]);
+        CPU_SBC(BC.hi);
         break;
     case 0x99:
-        CPU_SBC(BC.lo, op_cycles[opcode]);
+        CPU_SBC(BC.lo);
         break;
     case 0x9A:
-        CPU_SBC(DE.hi, op_cycles[opcode]);
+        CPU_SBC(DE.hi);
         break;
     case 0x9B:
-        CPU_SBC(DE.lo, op_cycles[opcode]);
+        CPU_SBC(DE.lo);
         break;
     case 0x9C:
-        CPU_SBC(HL.hi, op_cycles[opcode]);
+        CPU_SBC(HL.hi);
         break;
     case 0x9D:
-        CPU_SBC(HL.lo, op_cycles[opcode]);
+        CPU_SBC(HL.lo);
         break;
     case 0x9E:
+    {
         uint8_t n = readByte(HL.value);
-        CPU_SBC(n, op_cycles[opcode]);
-        break;
+        CPU_SBC(n);
+    }
+    break;
     case 0x9F:
-        CPU_SBC(AF.hi, op_cycles[opcode]);
+        CPU_SBC(AF.hi);
         break;
     case 0xA0:
-        CPU_8BIT_AND(AF.hi, BC.hi, op_cycles[opcode], false);
+        CPU_8BIT_AND(AF.hi, BC.hi, false);
         break;
     case 0xA1:
-        CPU_8BIT_AND(AF.hi, BC.lo, op_cycles[opcode], false);
+        CPU_8BIT_AND(AF.hi, BC.lo, false);
         break;
     case 0xA2:
-        CPU_8BIT_AND(AF.hi, DE.hi, op_cycles[opcode], false);
+        CPU_8BIT_AND(AF.hi, DE.hi, false);
         break;
     case 0xA3:
-        CPU_8BIT_AND(AF.hi, DE.lo, op_cycles[opcode], false);
+        CPU_8BIT_AND(AF.hi, DE.lo, false);
         break;
     case 0xA4:
-        CPU_8BIT_AND(AF.hi, HL.hi, op_cycles[opcode], false);
+        CPU_8BIT_AND(AF.hi, HL.hi, false);
         break;
     case 0xA5:
-        CPU_8BIT_AND(AF.hi, HL.lo, op_cycles[opcode], false);
+        CPU_8BIT_AND(AF.hi, HL.lo, false);
         break;
     case 0xA6:
+    {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_AND(AF.hi, n, op_cycles[opcode], false);
-        break;
+        CPU_8BIT_AND(AF.hi, n, false);
+    }
+    break;
     case 0xA7: // TODO: fix bug
-        CPU_8BIT_AND(AF.hi, AF.hi, op_cycles[opcode], false);
+        CPU_8BIT_AND(AF.hi, AF.hi, false);
         break;
     case 0xA8:
-        CPU_8BIT_XOR(AF.hi, BC.hi, op_cycles[opcode], false);
+        CPU_8BIT_XOR(AF.hi, BC.hi, false);
         break;
     case 0xA9:
-        CPU_8BIT_XOR(AF.hi, BC.lo, op_cycles[opcode], false);
+        CPU_8BIT_XOR(AF.hi, BC.lo, false);
         break;
     case 0xAA:
-        CPU_8BIT_XOR(AF.hi, DE.hi, op_cycles[opcode], false);
+        CPU_8BIT_XOR(AF.hi, DE.hi, false);
         break;
     case 0xAB:
-        CPU_8BIT_XOR(AF.hi, DE.lo, op_cycles[opcode], false);
+        CPU_8BIT_XOR(AF.hi, DE.lo, false);
         break;
     case 0xAC:
-        CPU_8BIT_XOR(AF.hi, HL.hi, op_cycles[opcode], false);
+        CPU_8BIT_XOR(AF.hi, HL.hi, false);
         break;
     case 0xAD:
-        CPU_8BIT_XOR(AF.hi, HL.lo, op_cycles[opcode], false);
+        CPU_8BIT_XOR(AF.hi, HL.lo, false);
         break;
     case 0xAE:
+    {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_XOR(AF.hi, n, op_cycles[opcode], false);
-        break;
+        CPU_8BIT_XOR(AF.hi, n, false);
+    }
+    break;
     case 0xAF:
-        CPU_8BIT_XOR(AF.hi, AF.hi, op_cycles[opcode], false);
+        CPU_8BIT_XOR(AF.hi, AF.hi, false);
         break;
     case 0xB0:
-        CPU_8BIT_OR(AF.hi, BC.hi, op_cycles[opcode], false);
+        CPU_8BIT_OR(AF.hi, BC.hi, false);
         break;
     case 0xB1:
-        CPU_8BIT_OR(AF.hi, BC.lo, op_cycles[opcode], false);
+        CPU_8BIT_OR(AF.hi, BC.lo, false);
         break;
     case 0xB2:
-        CPU_8BIT_OR(AF.hi, DE.hi, op_cycles[opcode], false);
+        CPU_8BIT_OR(AF.hi, DE.hi, false);
         break;
     case 0xB3:
-        CPU_8BIT_OR(AF.hi, DE.lo, op_cycles[opcode], false);
+        CPU_8BIT_OR(AF.hi, DE.lo, false);
         break;
     case 0xB4:
-        CPU_8BIT_OR(AF.hi, HL.hi, op_cycles[opcode], false);
+        CPU_8BIT_OR(AF.hi, HL.hi, false);
         break;
     case 0xB5:
-        CPU_8BIT_OR(AF.hi, HL.lo, op_cycles[opcode], false);
+        CPU_8BIT_OR(AF.hi, HL.lo, false);
         break;
     case 0xB6:
+    {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_OR(AF.hi, n, op_cycles[opcode], false);
-        break;
+        CPU_8BIT_OR(AF.hi, n, false);
+    }
+    break;
     case 0xB7:
-        CPU_8BIT_OR(AF.hi, AF.hi, op_cycles[opcode], false);
+        CPU_8BIT_OR(AF.hi, AF.hi, false);
         break;
     case 0xB8:
-        CPU_8BIT_CP(AF.hi, BC.hi, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, BC.hi);
     case 0xB9:
-        CPU_8BIT_CP(AF.hi, BC.lo, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, BC.lo);
     case 0xBA:
-        CPU_8BIT_CP(AF.hi, DE.hi, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, DE.hi);
     case 0xBB:
-        CPU_8BIT_CP(AF.hi, DE.lo, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, DE.lo);
     case 0xBC:
-        CPU_8BIT_CP(AF.hi, HL.hi, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, HL.hi);
     case 0xBD:
-        CPU_8BIT_CP(AF.hi, HL.lo, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, HL.lo);
     case 0xBE:
+    {
         uint8_t n = readByte(HL.value);
-        CPU_8BIT_CP(AF.hi, n, op_cycles[opcode]);
-        break;
+        CPU_8BIT_CP(AF.hi, n);
+    }
+    break;
     case 0xBF:
-        CPU_8BIT_CP(AF.hi, AF.hi, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, AF.hi);
         break;
     case 0xC0: // TODO: RET NZ
     {
@@ -720,7 +776,7 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0xC1:
-        CPU_POP(BC, op_cycles[opcode]);
+        CPU_POP(BC);
         break;
     case 0xC2: // TODO: JP NZ,nn
     {
@@ -743,13 +799,13 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0xC5:
-        CPU_PUSH(BC, op_cycles[opcode]);
+        CPU_PUSH(BC);
         break;
     case 0xC6:
-        CPU_8BIT_ADD(AF.hi, 0, op_cycles[opcode], true, false);
+        CPU_8BIT_ADD(AF.hi, 0, true, false);
         break;
     case 0xC7: // TODO: RST 00H
-        CPU_RST(0x00, op_cycles[opcode]);
+        CPU_RST(0x00);
         break;
     case 0xC8: // TODO: RET Z
     {
@@ -784,16 +840,20 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0xCE: // ADC A, #
-        CPU_8BIT_ADD(AF.hi, 0, op_cycles[opcode], true, true);
+        CPU_8BIT_ADD(AF.hi, 0, true, true);
         break;
     case 0xCF: // RST 08H
-        CPU_RST(0x08, op_cycles[opcode]);
+        CPU_RST(0x08);
         break;
     case 0xD0: // TODO: RET NC
+    {
+        if (getCarryFlag() == false)
+            CPU_RET();
         // CPU_RET();
-        break;
+    }
+    break;
     case 0xD1:
-        CPU_POP(DE, op_cycles[opcode]);
+        CPU_POP(DE);
         break;
     case 0xD2: // TODO: JP NC,nn
     {
@@ -811,13 +871,13 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0xD5:
-        CPU_PUSH(DE, op_cycles[opcode]);
+        CPU_PUSH(DE);
         break;
     case 0xD6:
-        CPU_8BIT_SUB(AF.hi, 0, op_cycles[opcode], true, false);
+        CPU_8BIT_SUB(AF.hi, 0, true, false);
         break;
     case 0xD7: // TODO: RST 10H
-        CPU_RST(0x10, op_cycles[opcode]);
+        CPU_RST(0x10);
         break;
     case 0xD8: // TODO: RET C
     {
@@ -838,7 +898,7 @@ int CPU::execute(uint8_t opcode)
             CPU_JP(nn);
     }
     break;
-    case 0xDB: // TODO: None?
+    // case 0xDB: // TODO: None?
     case 0xDC: // TODO: call C,nn
     {
         uint16_t nn = readWord(pc);
@@ -850,46 +910,44 @@ int CPU::execute(uint8_t opcode)
     break;
     // case 0xDD: // TODO: None?
     case 0xDE: // TODO: SBC A,d8
-        CPU_SBC(AF.hi, op_cycles[opcode]);
+        CPU_SBC(AF.hi);
         break;
     case 0xDF: // TODO: RST 18H
-        CPU_RST(0x18, op_cycles[opcode]);
+        CPU_RST(0x18);
         break;
     case 0xE0:
     {
         uint8_t n = readByte(pc);
         pc++;
         writeByte((0xFF00 + n), AF.hi);
-        // clockCycles += op_cycles[opcode];
     }
     break;
     case 0xE1:
-        CPU_POP(HL, op_cycles[opcode]);
+        CPU_POP(HL);
         break;
     case 0xE2: // TODO
     {
         writeByte((0xFF00 + BC.lo), AF.hi);
-        // clockCycles += op_cycles[opcode];
     }
     break;
     // case 0xE3: // TODO: None?
     // case 0xE4: // TODO: also none
     case 0xE5:
-        CPU_PUSH(HL, op_cycles[opcode]);
+        CPU_PUSH(HL);
         break;
     case 0xE6: // TODO: Check
     {
         uint8_t op = readByte(pc);
-        CPU_8BIT_AND(AF.hi, op, op_cycles[opcode], true);
+        CPU_8BIT_AND(AF.hi, op, true);
     }
     break;
     case 0xE7: // TODO: RST 20H
-        CPU_RST(0x20, op_cycles[opcode]);
+        CPU_RST(0x20);
         break;
     case 0xE8: // TODO: check
     {
         uint8_t n = readByte(pc++);
-        CPU_16BIT_ADD(sp, n, op_cycles[opcode]);
+        CPU_16BIT_ADD(sp, n);
     }
     break;
     case 0xE9:
@@ -902,7 +960,6 @@ int CPU::execute(uint8_t opcode)
         nn |= readWord(pc);
         pc += 2;
         writeByte(nn, AF.hi);
-        // clockCycles += op_cycles[opcode];
     }
     break;
     // case 0xEB: // TODO: None for EB, EC, ED
@@ -911,24 +968,24 @@ int CPU::execute(uint8_t opcode)
     case 0xEE: // TODO: check
     {
         uint8_t op = readByte(pc);
-        CPU_8BIT_XOR(AF.hi, op, op_cycles[opcode], true);
+        CPU_8BIT_XOR(AF.hi, op, true);
     }
     break;
     case 0xEF: // TODO: RST 28H
-        CPU_RST(0x28, op_cycles[opcode]);
+        CPU_RST(0x28);
         break;
     case 0xF0:
     {
         uint8_t n = readByte(pc);
         pc++;
-        CPU_REG_ROM_LD(AF.hi, (0xFF00 + n), op_cycles[opcode]);
+        CPU_REG_ROM_LD(AF.hi, (0xFF00 + n));
     }
     break;
     case 0xF1:
-        CPU_POP(AF, op_cycles[opcode]);
+        CPU_POP(AF);
         break;
     case 0xF2: // TODO: check correctness
-        CPU_REG_ROM_LD(AF.hi, (0xFF00 + BC.lo), op_cycles[opcode]);
+        CPU_REG_ROM_LD(AF.hi, (0xFF00 + BC.lo));
         break;
     case 0xF3: // DI, aka disable interrupt
         // op_set_ime()
@@ -936,23 +993,23 @@ int CPU::execute(uint8_t opcode)
         break;
     // case 0xF4: // TODO: None?
     case 0xF5:
-        CPU_PUSH(AF, op_cycles[opcode]);
+        CPU_PUSH(AF);
         break;
     case 0xF6:
     {
         uint8_t n = readByte(pc);
         pc++;
-        CPU_8BIT_OR(AF.hi, n, op_cycles[opcode], true);
+        CPU_8BIT_OR(AF.hi, n, true);
     }
     break;
     case 0xF7: // TODO: RST 30H
-        CPU_RST(0x30, op_cycles[opcode]);
+        CPU_RST(0x30);
         break;
     case 0xF8: // TODO
-        // CPU_16BIT_REG_LD(HL.value, sp+n, op_cycles[opcode]);
+        // CPU_16BIT_REG_LD(HL.value, sp+n);
         break;
     case 0xF9: // TODO: check accuracy
-        CPU_16BIT_REG_LD(sp, HL.value, op_cycles[opcode]);
+        CPU_16BIT_REG_LD(sp, HL.value);
         break;
     case 0xFA: // TODO
     {
@@ -969,11 +1026,11 @@ int CPU::execute(uint8_t opcode)
     case 0xFE: // TODO: check
     {
         uint8_t op = readByte(pc);
-        CPU_8BIT_CP(AF.hi, op, op_cycles[opcode]);
+        CPU_8BIT_CP(AF.hi, op);
     }
     break;
     case 0xFF: // TODO: RST 38H
-        CPU_RST(0x38, op_cycles[opcode]);
+        CPU_RST(0x38);
         break;
     case 0xFC: // illegal
     case 0xFD: // illegal
@@ -987,9 +1044,10 @@ int CPU::execute(uint8_t opcode)
     }
     return op_cycles[opcode];
 }
-
+// TODO:
 bool CPU::checkInterrupts()
 {
+    return false;
 }
 
 int CPU::handleInterrupts()
@@ -1000,20 +1058,21 @@ int CPU::handleInterrupts()
 // TODO: finsih & check for semantic errors
 int CPU::tick()
 {
+    int cycles = 0;
     while (!cpuStopped)
     {
         // 1. fetch instruction
         uint8_t opcode = fetch();
         // 2. decode & execute
-        clockCycles -= execute(opcode);
+        cycles += execute(opcode);
         // 3. check & handle interrupts
         if (clockCycles <= 0)
         {
-            clockCycles += handleInterrupts();
+            cycles += handleInterrupts();
             // if (exit) break;
         }
     }
-    return clockCycles;
+    return cycles;
 }
 
 void CPU::executeExtendedOpcode()
@@ -1114,6 +1173,8 @@ void CPU::executeExtendedOpcode()
     case 0x86:
     case 0x73:
     default:
-        // TODO: unrecognized code
+        printf("Unsupported opcode: 0xCB%02x at 0x%04x\n\n\n", op, pc);
+        exit(EXIT_FAILURE);
+        pc++;
     }
 }
