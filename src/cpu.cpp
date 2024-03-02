@@ -276,6 +276,7 @@ int CPU::execute(uint8_t opcode)
     break;
     case 0x21:
         CPU_16BIT_LD(HL.value);
+        break;
     case 0x22:
     {
         CPU_ROM_REG_LD(HL.value, AF.hi);
@@ -792,16 +793,22 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xB8:
         CPU_8BIT_CP(AF.hi, BC.hi);
+        break;
     case 0xB9:
         CPU_8BIT_CP(AF.hi, BC.lo);
+        break;
     case 0xBA:
         CPU_8BIT_CP(AF.hi, DE.hi);
+        break;
     case 0xBB:
         CPU_8BIT_CP(AF.hi, DE.lo);
+        break;
     case 0xBC:
         CPU_8BIT_CP(AF.hi, HL.hi);
+        break;
     case 0xBD:
         CPU_8BIT_CP(AF.hi, HL.lo);
+        break;
     case 0xBE:
     {
         uint8_t n = readByte(HL.value);
