@@ -1,63 +1,77 @@
-#include "timer.h"
+#include "../include/timer.h"
 
 Timer::Timer(MMU *memory = NULL)
 {
     memory = memory;
 }
 
-// TODO: finish: fix and check
-void Timer::updateTimers(int cycles)
+void Timer::requestTimerInterrupt()
 {
-    // incDiv();
+}
+
+// TODO: finish: fix and check
+void Timer::handleTimers(int cycles)
+{
+    memory->incDIV();
     if (timerEnabled)
     {
-        timerCounter -= cycles;
-        if (timerCounter <= 0)
+        t_clocksum += cycles;
+        setClockFrequency();
+        while (t_clocksum >= (4194304 / frequency))
         {
-            uint8_t tima = memory->readByte(TIMA);
-            setClockFrequency(tima);
-            uint8_t value = memory->readByte(TIMA); // read the timer
-            // if ()
+            memory->incAddr(TIMA);
+            // if overflow, do timer interrupt
+            // & reset timer to modulo
+            if (memory->readByte(TIMA) >= 0xFF)
+            {
+                // TODO: TIMA = TMC
+                memory->writeByte(TIMA, memory->readByte(TMA));
+                requestTimerInterrupt();
+            }
+            t_clocksum -= (4194304 / frequency);
         }
     }
 }
 
 // TODO: finish
-bool Timer::clockEnabled(uint8_t tmc)
+bool Timer::clockEnabled()
 {
     // bit 0 & 1: set timer frequency
     // bit 2: turn timer on or off
-    uint8_t bits = tmc & 7;
-    return ((tmc) & (1 << bits));
+    uint8_t n = memory->readByte(TMC);
+    uint8_t bits = n & 7;
+    return ((n) & (1 << bits));
 }
 
-uint8_t Timer::readClockFrequency(uint8_t tima)
+uint8_t Timer::readClockFrequency()
 {
-    return tima & 0x3;
+    uint8_t n = memory->readByte(TIMA);
+    return n & 0x3;
 }
 
-void Timer::setClockFrequency(uint8_t tima)
+void Timer::setClockFrequency()
 {
-    uint8_t freq = readClockFrequency(tima);
+    // uint8_t n = memory->readByte(TIMA);
+    uint8_t freq = readClockFrequency();
     switch (freq)
     {
     case 0:
-        timerCounter = 1024;
-        break; // 4096
+        t_clocksum = 1024;
+        break; // 4.19MHZ / 4096
     case 1:
-        timerCounter = 16;
+        t_clocksum = 16;
         break; // 262144
     case 2:
-        timerCounter = 64;
+        t_clocksum = 64;
         break; // 65536
     case 3:
-        timerCounter = 256;
+        t_clocksum = 256;
         break; // 16382
     }
 }
 
 // increment the divider register
-void incDiv(uint8_t *memory, uint16_t dr_addr, uint8_t cycles)
+void incDiv(uint16_t dr_addr, uint8_t cycles)
 {
     uint8_t divRegister = 0;
     uint8_t divCounter = 0;
@@ -65,6 +79,6 @@ void incDiv(uint8_t *memory, uint16_t dr_addr, uint8_t cycles)
     if (divCounter >= 255)
     {
         divCounter = 0;
-        memory[0xFF04]++; // TODO: fix
+        // memory[0xFF04]++; // TODO: fix
     }
 }

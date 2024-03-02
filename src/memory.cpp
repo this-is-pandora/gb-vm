@@ -1,5 +1,6 @@
 #include "../include/memory.h"
 #include <fstream>
+
 using namespace std;
 // total RAM size: 0xFFFF
 
@@ -9,7 +10,20 @@ using namespace std;
 // vram: 0x8000 - 9FFF (8kB)
 // IO: 0xFF00 -
 // hram: 0xFF80 - 0xFFFE
-
+// TODO: develop further
+MMU::MMU()
+{
+    // read bootstrap program from binary
+    memset(m_ROM, 0, sizeof(m_ROM));
+    // FILE *fp = fopen("DMG_ROM.bin", "rb");
+    //  fread(bootloader, sizeof(uint_8), 256, fp);
+    //  load game into memory
+    // FILE *rom = fopen(f_rom, "rb");
+    // fread(m_ROM, sizeof(uint8_t), 32768, rom);
+    // fclose(fp);
+    // fclose(rom);
+}
+// TODO: develop further. fix.
 void MMU::loadROM(char *rom)
 {
     // 1. open the rom file
@@ -239,16 +253,21 @@ void MMU::writeByte(uint16_t addr, uint8_t value)
     {
         // restricted area
     }
-    /*
-    else if (addr == TIMA) {
+    else if (addr == 0xFF05)
+    {
+        // 0xFF05 is the timer counter.
+        // It is incremented at the frequency specified in TAC (0xFF07)
+        // If its value exceeds 0xFF, it is reset to the value specified in TMA (0xFF06)
+        // and an interrupt is requested
+        /*
         uint8_t current_freq = readClockFrequency();
         m_ROM[TIMA] = value;
         uint8_t n_freq = readClockFrequency();
-        if (current_freq != n_freq) {
+        if (current_freq != n_freq)
+        {
             setClockFrequency();
-        }
+        } */
     }
-    */
     // divider register
     else if ((addr == 0xFF04) || (addr == 0xFF44))
     {
@@ -269,6 +288,11 @@ void MMU::writeWord(uint16_t addr, uint16_t value)
     m_ROM[addr] = value;
 }
 
+void MMU::incAddr(uint16_t addr)
+{
+    m_ROM[addr] += 1;
+}
+
 // TODO: Fix
 void MMU::incDIV()
 {
@@ -285,7 +309,7 @@ void MMU::incDIV()
 
 void MMU::DMATransfer(uint8_t src_dst)
 {
-    uint16_t addr = src_dst << 8; // get the src
+    uint16_t addr = src_dst << 8; // get the src value
     uint8_t value;
     // start from OAM to end of OAM
     for (int i = 0; i < 0xA0; i++)
@@ -312,4 +336,14 @@ uint16_t MMU::pop(uint16_t &sp)
     value |= readByte(sp);
     sp += 2;
     return value;
+}
+
+void MMU::enableInterrupts(bool value)
+{
+    ime = value;
+}
+
+bool MMU::interruptsEnabled()
+{
+    return ime;
 }

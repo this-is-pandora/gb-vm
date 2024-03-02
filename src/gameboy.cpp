@@ -2,12 +2,20 @@
 
 GameBoy::GameBoy()
 {
-    memory = new MMU();
-    // timer = new Timer();
-    cpu = new CPU(memory);
+    mmu = new MMU();
+    cpu = new CPU();
+    gpu = new GPU(mmu);
+    // gui = new GUI();
     // ppu = new PPU();
     // jp = new JoyPad();
-    // TODO: etc.
+    // spu = new SPU();
+}
+
+GameBoy::~GameBoy()
+{
+    delete cpu;
+    delete gpu;
+    delete mmu;
 }
 
 void GameBoy::update()
@@ -21,6 +29,12 @@ void GameBoy::update()
         // current_cycles += cycles;
         // updateTimer();
         // updateGraphics();
+        // handleInterrupts();
+        current_cycles += cpu->tick();
+        // handleTimers(current_cycles)
+        // updateGPU(current_cycles);
+        // updateSPU();
+        // handleInputs();
         // handleInterrupts();
     }
     // renderGraphics();

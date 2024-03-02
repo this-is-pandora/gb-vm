@@ -1,6 +1,7 @@
 #include "../include/cpu.h"
+#include <iostream>
 
-CPU::CPU(MMU *mmu)
+CPU::CPU()
 {
     // boot rom
     AF.value = 0x01B0;
@@ -8,16 +9,35 @@ CPU::CPU(MMU *mmu)
     DE.value = 0x00D8;
     HL.value = 0x014D;
 
-    clockCycles = 0;
+    clocksum = 0;
     clockSpeed = 1024;
 
     accessedMemory = false;
     cpuStopped = false;
     cpuHalted = false;
-    interruptsEnabled = false;
     debugMode = false;
 
-    memory = mmu;
+    memory = new MMU(); // todo: fix
+    h_interrupts = new InterruptHandler(memory);
+    h_timer = new Timer(memory);
+}
+/* output current CPU register values*/
+void CPU::status()
+{
+    printf("a = %02x\n", AF.hi);
+    printf("f = %02x\n", AF.lo);
+    printf("b = %02x\n", BC.hi);
+    printf("c = %02x\n", BC.lo);
+    printf("d = %02x\n", DE.hi);
+    printf("e = %02x\n", DE.lo);
+    printf("h = %02x\n", HL.hi);
+    printf("l = %02x\n", HL.lo);
+    printf("sp = %04x\n", sp);
+    printf("pc = %04x\n", pc);
+    printf("c_flag = %u\n", getCarryFlag());
+    printf("h_flag = %u\n", getHalfCarryFlag());
+    printf("n_flag = %u\n", getSubtractFlag());
+    printf("z_flag = %u\n", getZeroFlag());
 }
 
 void CPU::writeByte(uint16_t addr, uint8_t data)
@@ -50,9 +70,11 @@ void CPU::setZeroFlag(bool val)
 {
     if (val)
     {
+        CPU_SET(AF.lo, FLAG_MASK_Z);
     }
     else
     {
+        CPU_RES(AF.lo, FLAG_MASK_Z);
     }
 }
 
@@ -64,9 +86,11 @@ void CPU::setSubtractFlag(bool val)
 {
     if (val)
     {
+        CPU_SET(AF.lo, FLAG_MASK_N);
     }
     else
     {
+        CPU_RES(AF.lo, FLAG_MASK_N);
     }
 }
 
@@ -79,9 +103,11 @@ void CPU::setCarryFlag(bool val)
 {
     if (val)
     {
+        CPU_SET(AF.lo, FLAG_MASK_C);
     }
     else
     {
+        CPU_RES(AF.lo, FLAG_MASK_C);
     }
 }
 
@@ -94,8 +120,26 @@ void CPU::setHalfCarryFlag(bool val)
 {
     if (val)
     {
+        CPU_SET(AF.lo, FLAG_MASK_H);
     }
     else
+    {
+        CPU_RES(AF.lo, FLAG_MASK_H);
+    }
+}
+
+void CPU::checkFlags(bool flag_z, bool flag_n, bool flag_h, bool flag_c)
+{
+    if (flag_z)
+    {
+    }
+    if (flag_n)
+    {
+    }
+    if (flag_h)
+    {
+    }
+    if (flag_c)
     {
     }
 }
@@ -131,8 +175,8 @@ int CPU::execute(uint8_t opcode)
     case 0x06:
         CPU_8BIT_LD(BC.hi);
         break;
-    case 0x07: // RLCA
-        CPU_RLCA();
+    case 0x07: // TODO: RLCA
+        CPU_RLC(AF.hi);
         break;
     case 0x08: // TODO: LD nn, sp
     {
@@ -168,10 +212,9 @@ int CPU::execute(uint8_t opcode)
         CPU_8BIT_LD(BC.lo);
         break;
     case 0x0F:
-        CPU_RRCA();
+        CPU_RRC(AF.hi);
         break;
     case 0x10: // TODO stop
-        // state = STOPPED;
         CPU_STOP();
         break;
     case 0x11: // LD DE, nn
@@ -193,7 +236,7 @@ int CPU::execute(uint8_t opcode)
         CPU_8BIT_LD(DE.hi);
         break;
     case 0x17:
-        CPU_RLA();
+        CPU_RL(AF.hi);
         break;
     case 0x18: // TODO: JR n
     {
@@ -220,7 +263,7 @@ int CPU::execute(uint8_t opcode)
         CPU_8BIT_LD(DE.lo);
         break;
     case 0x1F:
-        CPU_RRA();
+        CPU_RR(AF.hi);
         break;
     case 0x20: // TODO: JR NZ, *
     {
@@ -254,7 +297,7 @@ int CPU::execute(uint8_t opcode)
     case 0x27: // decimal adjust register A (DAA)
         CPU_DAA();
         break;
-    case 0x28: // JR Z,*
+    case 0x28: // TODO: JR Z,*
     {
         int8_t n = (int8_t)readByte(pc);
         if (getZeroFlag() == true)
@@ -298,6 +341,7 @@ int CPU::execute(uint8_t opcode)
     break;
     case 0x31:
         CPU_16BIT_LD(sp);
+        break;
     case 0x32: // LD (HLD),A
     {
         CPU_ROM_REG_LD(HL.value, AF.hi);
@@ -357,12 +401,11 @@ int CPU::execute(uint8_t opcode)
     case 0x3D:
         CPU_8BIT_DEC(AF.hi);
         break;
-    case 0x3E:
+    case 0x3E: // TODO: LD A, n
     {
-        uint8_t n = readByte(pc);
+        uint8_t n = readByte(pc++);
         AF.hi = n;
-        pc++;
-        // clockCycles +;
+        // pc++;
     }
     break;
     case 0x3F:
@@ -529,7 +572,6 @@ int CPU::execute(uint8_t opcode)
         CPU_ROM_REG_LD(HL.value, HL.lo);
         break;
     case 0x76: // TODO halt
-        // state = HALTED;
         CPU_HALT();
         break;
     case 0x77:
@@ -849,7 +891,6 @@ int CPU::execute(uint8_t opcode)
     {
         if (getCarryFlag() == false)
             CPU_RET();
-        // CPU_RET();
     }
     break;
     case 0xD1:
@@ -915,7 +956,7 @@ int CPU::execute(uint8_t opcode)
     case 0xDF: // TODO: RST 18H
         CPU_RST(0x18);
         break;
-    case 0xE0:
+    case 0xE0: // TODO: test
     {
         uint8_t n = readByte(pc);
         pc++;
@@ -953,7 +994,7 @@ int CPU::execute(uint8_t opcode)
     case 0xE9:
         CPU_JP(HL.value);
         break;
-    case 0xEA: // TODO
+    case 0xEA: // TODO: LD [addr], A
     {
         uint16_t nn = readWord(pc + 1);
         nn = nn << 8;
@@ -1005,13 +1046,16 @@ int CPU::execute(uint8_t opcode)
     case 0xF7: // TODO: RST 30H
         CPU_RST(0x30);
         break;
-    case 0xF8: // TODO
-        // CPU_16BIT_REG_LD(HL.value, sp+n);
-        break;
+    case 0xF8: // TODO: LD HL, SP+n
+    {
+        uint8_t n = readByte(pc);
+        CPU_16BIT_REG_LD(HL.value, sp + n);
+    }
+    break;
     case 0xF9: // TODO: check accuracy
         CPU_16BIT_REG_LD(sp, HL.value);
         break;
-    case 0xFA: // TODO
+    case 0xFA: // TODO: LD A, [addr]
     {
         uint16_t nn = readWord(pc);
         pc += 2;
@@ -1020,13 +1064,12 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     case 0xFB: // EI / Enable Interrupt
-        // op_set_ime()
         CPU_EI();
         break;
-    case 0xFE: // TODO: check
+    case 0xFE: // TODO: CP A, n
     {
-        uint8_t op = readByte(pc);
-        CPU_8BIT_CP(AF.hi, op);
+        uint8_t n = readByte(pc);
+        CPU_8BIT_CP(AF.hi, n);
     }
     break;
     case 0xFF: // TODO: RST 38H
@@ -1044,137 +1087,305 @@ int CPU::execute(uint8_t opcode)
     }
     return op_cycles[opcode];
 }
-// TODO:
-bool CPU::checkInterrupts()
-{
-    return false;
-}
 
-int CPU::handleInterrupts()
-{
-    // TODO
-    return 0;
-}
 // TODO: finsih & check for semantic errors
 int CPU::tick()
 {
     int cycles = 0;
     while (!cpuStopped)
     {
-        // 1. fetch instruction
-        uint8_t opcode = fetch();
-        // 2. decode & execute
-        cycles += execute(opcode);
-        // 3. check & handle interrupts
-        if (clockCycles <= 0)
+        if (!cpuHalted)
         {
-            cycles += handleInterrupts();
-            // if (exit) break;
+            // if EI/DI is called, it will enable interrupts after the next instruction
+            if (pendingEnable)
+            { // TODO: rework this code
+                memory->enableInterrupts(true);
+                pendingEnable = false;
+            }
+            else if (pendingDisable)
+            {
+                memory->enableInterrupts(false);
+                pendingDisable = false;
+            }
+            // 1. fetch instruction
+            uint8_t opcode = fetch();
+            // 2. decode & execute
+            cycles = execute(opcode);
         }
+        else
+            cycles = 1;
+        // 3. handle timer
+        if (h_timer->clockEnabled())
+            h_timer->handleTimers(cycles);
+        // 4. handle interrupts
+        if (memory->interruptsEnabled())
+            h_interrupts->handleInterrupts(pc, sp);
+        // 5. if (exit) break;
     }
     return cycles;
 }
 
 void CPU::executeExtendedOpcode()
 {
-    uint8_t op = readByte(pc++);
-    // pc++;
+    uint8_t op = readByte(pc + 1); // TODO: Test for correctness
+    pc += 2;
     switch (op)
     {
     // RLC n
     case 0x00:
+        CPU_RLC(BC.hi);
+        break;
     case 0x01:
+        CPU_RLC(BC.lo);
+        break;
     case 0x02:
+        CPU_RLC(DE.hi);
+        break;
     case 0x03:
+        CPU_RLC(DE.lo);
+        break;
     case 0x04:
+        CPU_RLC(HL.hi);
+        break;
     case 0x05:
+        CPU_RLC(HL.lo);
+        break;
     case 0x06:
+        CPU_RLC_MEM(HL.value);
+        break;
     case 0x07:
+        CPU_RLC(AF.hi);
+        break;
     // RL n
     case 0x10:
+        CPU_RL(BC.hi);
+        break;
     case 0x11:
+        CPU_RL(BC.lo);
+        break;
     case 0x12:
+        CPU_RL(DE.hi);
+        break;
     case 0x13:
+        CPU_RL(DE.lo);
+        break;
     case 0x14:
+        CPU_RL(HL.hi);
+        break;
     case 0x15:
+        CPU_RL(HL.lo);
+        break;
     case 0x16:
+        CPU_RL_MEM(HL.value);
+        break;
     case 0x17:
+        CPU_RL(AF.hi);
+        break;
     // RRC n
     case 0x08:
+        CPU_RRC(BC.hi);
+        break;
     case 0x09:
+        CPU_RRC(BC.lo);
+        break;
     case 0x0A:
+        CPU_RRC(DE.hi);
+        break;
     case 0x0B:
+        CPU_RRC(DE.lo);
+        break;
     case 0x0C:
+        CPU_RRC(HL.hi);
+        break;
     case 0x0D:
+        CPU_RRC(HL.lo);
+        break;
     case 0x0E:
+        CPU_RRC_MEM(HL.value);
+        break;
     case 0x0F:
+        CPU_RRC(AF.hi);
+        break;
     // RR n
     case 0x18:
+        CPU_RR(BC.hi);
+        break;
     case 0x19:
+        CPU_RR(BC.lo);
+        break;
     case 0x1A:
+        CPU_RR(DE.hi);
+        break;
     case 0x1B:
+        CPU_RR(DE.lo);
+        break;
     case 0x1C:
+        CPU_RR(HL.hi);
+        break;
     case 0x1D:
+        CPU_RR(HL.lo);
+        break;
     case 0x1E:
+        CPU_RR_MEM(HL.value);
+        break;
     case 0x1F:
+        CPU_RR(AF.hi);
+        break;
     // SLA n
     case 0x27:
+        CPU_SLA(AF.hi);
+        break;
     case 0x20:
+        CPU_SLA(BC.hi);
+        break;
     case 0x21:
+        CPU_SLA(BC.lo);
+        break;
     case 0x22:
+        CPU_SLA(DE.hi);
+        break;
     case 0x23:
+        CPU_SLA(DE.lo);
+        break;
     case 0x24:
+        CPU_SLA(HL.hi);
+        break;
     case 0x25:
+        CPU_SLA_MEM(HL.lo);
+        break;
     case 0x26:
+        CPU_SLA_MEM(HL.value);
+        break;
     // SRA n
     case 0x2F:
+        CPU_SRA(AF.hi);
+        break;
     case 0x28:
+        CPU_SRA(BC.hi);
+        break;
     case 0x29:
+        CPU_SRA(BC.lo);
+        break;
     case 0x2A:
+        CPU_SRA(DE.hi);
+        break;
     case 0x2B:
+        CPU_SRA(DE.lo);
+        break;
     case 0x2C:
+        CPU_SRA(HL.hi);
+        break;
     case 0x2D:
+        CPU_SRA(HL.lo);
+        break;
     case 0x2E:
+        CPU_SRA_MEM(HL.value);
+        break;
     // SRL n
     case 0x3F:
+        CPU_SRL(AF.hi);
+        break;
     case 0x38:
+        CPU_SRL(BC.hi);
+        break;
     case 0x39:
+        CPU_SRL(BC.lo);
+        break;
     case 0x3A:
+        CPU_SRL(DE.hi);
+        break;
     case 0x3B:
+        CPU_SRL(DE.lo);
+        break;
     case 0x3C:
+        CPU_SRL(HL.hi);
+        break;
     case 0x3D:
+        CPU_SRL(HL.lo);
+        break;
     case 0x3E:
+        CPU_SRL_MEM(HL.value);
+        break;
     // BIT b,r
     case 0x47:
+        CPU_BIT(AF.hi, 0);
+        break;
     case 0x40:
+        CPU_BIT(BC.hi, 0);
+        break;
     case 0x41:
+        CPU_BIT(BC.lo, 0);
+        break;
     case 0x42:
+        CPU_BIT(DE.hi, 0);
+        break;
     case 0x43:
+        CPU_BIT(DE.lo, 0);
+        break;
     case 0x44:
+        CPU_BIT(HL.hi, 0);
+        break;
     case 0x45:
+        CPU_BIT(HL.lo, 0);
+        break;
     case 0x46:
+        // TODO: CPU_BIT(HL.value, 0);
+        break;
     // SET b,r
     case 0xC7:
+        CPU_SET(AF.hi, 0);
+        break;
     case 0xC0:
+        CPU_SET(BC.hi, 0);
+        break;
     case 0xC1:
+        CPU_SET(BC.lo, 0);
+        break;
     case 0xC2:
+        CPU_SET(DE.hi, 0);
+        break;
     case 0xC3:
+        CPU_SET(DE.lo, 0);
+        break;
     case 0xC4:
+        CPU_SET(HL.hi, 0);
+        break;
     case 0xC5:
+        CPU_SET(HL.lo, 0);
+        break;
     case 0xC6:
+        // TODO:CPU_SET(HL.value, 0);
+        break;
     // RES b,r
     case 0x87:
+        CPU_RES(AF.hi, 0);
+        break;
     case 0x80:
+        CPU_RES(BC.hi, 0);
+        break;
     case 0x81:
+        CPU_RES(BC.lo, 0);
+        break;
     case 0x82:
+        CPU_RES(DE.hi, 0);
+        break;
     case 0x83:
+        CPU_RES(DE.lo, 0);
+        break;
     case 0x84:
+        CPU_RES(HL.hi, 0);
+        break;
     case 0x85:
+        CPU_RES(HL.lo, 0);
+        break;
     case 0x86:
+        // TODO:CPU_RES(HL.value, 0);
+        break;
     case 0x73:
+        // CPU_RES(AF.hi, 0);
     default:
         printf("Unsupported opcode: 0xCB%02x at 0x%04x\n\n\n", op, pc);
         exit(EXIT_FAILURE);
-        pc++;
+        // pc++;
     }
 }

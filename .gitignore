@@ -655,3 +655,12 @@ CMakeFiles/cmake.check_cache
 CMakeFiles/CMakeConfigureLog.yaml
 CMakeFiles/3.28.0-rc1/CMakeSystem.cmake
 CMakeCache.txt
+build/register_tests[1]_include.cmake
+build/.cmake/api/v1/reply/codemodel-v2-5583ff2dd4c4267900bd.json
+build/.cmake/api/v1/reply/index-2024-02-16T20-42-55-0509.json
+build/.cmake/api/v1/reply/target-register_tests-Debug-8aaa1c3967549e3b768a.json
+build/test/register_tests.exe
+build/test/register_tests[1]_include.cmake
+build/test/register_tests[1]_tests.cmake
+build/test/CMakeFiles/register_tests.dir/__/src/opcodes.cpp.obj
+build/test/CMakeFiles/register_tests.dir/__/src/opcodes.cpp.obj.d

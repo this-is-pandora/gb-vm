@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-#include "memory.h";
+#include "memory.h"
 
 // memory addresses
 #define DIV_REG 0xFF04 // divider register
@@ -18,27 +18,28 @@
 // the timer control (TMC) is a 3-bit register
 // where the bits 0 & 1 specify which frequency
 // the timer should increment at
-// bit 2 specifies whether to run or stop the timer
+// bit 2 specifies whether the timer is on or off
 
 #define CLOCKSPEED 4194304
 
 class Timer
 {
 private:
+    bool timerEnabled;
     // TMA frequencies
     int frequencies[4] = {4096, 262144, 65536, 16384};
     int frequency = frequencies[0]; // 4096
 
     // timer counter is 1024 by default
     // 4194304/4096 = 1024
-    int timerCounter = CLOCKSPEED / frequency;
-    bool timerEnabled;
+    int t_clocksum = CLOCKSPEED / frequency;
     MMU *memory;
 
 public:
     Timer(MMU *memory = NULL);
-    void updateTimers(int cycles);
-    bool clockEnabled(uint8_t tmc);
-    uint8_t readClockFrequency(uint8_t tima);
-    void setClockFrequency(uint8_t tima);
+    void handleTimers(int cycles);
+    bool clockEnabled();
+    uint8_t readClockFrequency();
+    void setClockFrequency();
+    void requestTimerInterrupt();
 };

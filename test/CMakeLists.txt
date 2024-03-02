@@ -1,6 +1,8 @@
 enable_testing()
-set(SOURCES 
-    register_tests.cpp
+set(SOURCES
+    main_tests.cpp
+    register_tests.h
+    memory_tests.h
     ../src/opcodes.cpp
     ../src/cpu.cpp
     ../include/cpu.h
@@ -8,7 +10,8 @@ set(SOURCES
     ../include/memory.h
 )
 
-add_executable(register_tests ${SOURCES})
-target_link_libraries(register_tests GTest::gtest_main)
+add_executable(main_tests ${SOURCES})
+
+target_link_libraries(main_tests GTest::gtest_main)
 include(GoogleTest)
-gtest_discover_tests(register_tests)
+gtest_discover_tests(main_tests)

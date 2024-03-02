@@ -1,27 +1,31 @@
 #pragma once
+#include <stdint.h>
+#include "memory.h"
 
-#define IER 0xFF0F // interrupt request register
+#define IER 0xFF0F // interrupt request/flag register
+#define IE 0xFFFF  // interrupt enable register
 
 enum Interrupts
 {
     VBLANK,
     LCD,
     TIMER,
-    SERIAL,
+    // SERIAL,
     JOYPAD
 };
 
-class Interrupt
+class InterruptHandler
 {
+private:
+    // bool interruptsEnabled;
+    MMU *mmu;
+    // bool interruptsEnabled = false;
+    bool readInterrupt(Interrupts i);
+
+public:
+    InterruptHandler(MMU *mmu);
+    // TODO: define interrupt routines
+    void handleInterrupts(uint16_t &pc, uint16_t &sp);
+    void requestInterrupt(int id);
+    void serviceInterrupt(int id, uint16_t &pc, uint16_t &sp);
 };
-
-// TODO: define interrupt routines
-void requestInterrupt(int id);
-void checkInterrupt();
-void serviceInterrupt();
-
-// interrupt handlers
-void vblank_handler();
-void lcd_handler();
-void serial_handler();
-void joypad_handler();

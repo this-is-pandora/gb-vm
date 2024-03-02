@@ -17,7 +17,7 @@ TODO: Most important
 
 TODO: Other features & additions (if I have time)
 - [ ] Menu to select and load .gb file
-- [x] Implement MBC1, MBC2
+- [ ] Implement MBC1, MBC2
 - [ ] Implement other MBCs
 - [ ] Optimize & clean up code
 - [ ] Color
