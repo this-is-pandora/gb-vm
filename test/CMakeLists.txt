@@ -2,12 +2,17 @@ enable_testing()
 set(SOURCES
     main_tests.cpp
     register_tests.h
+    flag_tests.h
     memory_tests.h
     ../src/opcodes.cpp
     ../src/cpu.cpp
-    ../include/cpu.h
     ../src/memory.cpp
+    ../src/interrupts.cpp
+    ../src/timer.cpp
+    ../include/cpu.h
     ../include/memory.h
+    ../include/interrupts.h
+    ../include/timer.h
 )
 
 add_executable(main_tests ${SOURCES})

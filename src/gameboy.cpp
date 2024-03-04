@@ -3,7 +3,7 @@
 GameBoy::GameBoy()
 {
     mmu = new MMU();
-    cpu = new CPU();
+    cpu = new CPU(mmu);
     gpu = new GPU(mmu);
     // gui = new GUI();
     // ppu = new PPU();
@@ -31,11 +31,6 @@ void GameBoy::update()
         // updateGraphics();
         // handleInterrupts();
         current_cycles += cpu->tick();
-        // handleTimers(current_cycles)
-        // updateGPU(current_cycles);
-        // updateSPU();
-        // handleInputs();
-        // handleInterrupts();
     }
     // renderGraphics();
 }

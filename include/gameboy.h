@@ -37,6 +37,7 @@ public:
     void executeInstrctn();
     void handleInput();
     void scanLine();
+    void reset();
     void update();
     void emulate();
 };

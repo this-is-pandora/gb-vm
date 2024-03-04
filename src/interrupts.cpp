@@ -1,5 +1,10 @@
 #include "../include/interrupts.h"
 
+InterruptHandler::InterruptHandler(MMU *mmu)
+{
+    mmu = mmu;
+}
+
 bool InterruptHandler::readInterrupt(Interrupts i)
 {
     return ((mmu->readByte(IE) & i) & (mmu->readByte(IER) & i)) ? true : false;
@@ -16,7 +21,7 @@ void InterruptHandler::serviceInterrupt(int id, uint16_t &pc, uint16_t &sp)
 {
     /* disable interrupt
      change IER so cpu knows interrupt has been serviced */
-    mmu->enableInterrupts(false); // TODO: integrate w/ CPU file
+    mmu->enableInterrupts(false);
     uint8_t reqs = mmu->readByte(IER);
     reqs &= ~(1 << id);
     mmu->writeByte(IER, reqs);

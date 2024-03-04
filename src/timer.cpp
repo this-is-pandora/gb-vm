@@ -1,6 +1,6 @@
 #include "../include/timer.h"
 
-Timer::Timer(MMU *memory = NULL)
+Timer::Timer(MMU *memory)
 {
     memory = memory;
 }

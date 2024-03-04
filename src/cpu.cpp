@@ -1,7 +1,7 @@
 #include "../include/cpu.h"
 #include <iostream>
 
-CPU::CPU()
+CPU::CPU(MMU *mmu)
 {
     // boot rom
     AF.value = 0x01B0;
@@ -17,7 +17,8 @@ CPU::CPU()
     cpuHalted = false;
     debugMode = false;
 
-    memory = new MMU(); // todo: fix
+    // memory = new MMU(); // todo: fix
+    memory = mmu;
     h_interrupts = new InterruptHandler(memory);
     h_timer = new Timer(memory);
 }
@@ -70,11 +71,11 @@ void CPU::setZeroFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_MASK_Z);
+        CPU_SET(AF.lo, FLAG_Z);
     }
     else
     {
-        CPU_RES(AF.lo, FLAG_MASK_Z);
+        CPU_RES(AF.lo, FLAG_Z);
     }
 }
 
@@ -86,11 +87,11 @@ void CPU::setSubtractFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_MASK_N);
+        CPU_SET(AF.lo, FLAG_N);
     }
     else
     {
-        CPU_RES(AF.lo, FLAG_MASK_N);
+        CPU_RES(AF.lo, FLAG_N);
     }
 }
 
@@ -103,11 +104,11 @@ void CPU::setCarryFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_MASK_C);
+        CPU_SET(AF.lo, FLAG_C);
     }
     else
     {
-        CPU_RES(AF.lo, FLAG_MASK_C);
+        CPU_RES(AF.lo, FLAG_C);
     }
 }
 
@@ -120,11 +121,11 @@ void CPU::setHalfCarryFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_MASK_H);
+        CPU_SET(AF.lo, FLAG_H);
     }
     else
     {
-        CPU_RES(AF.lo, FLAG_MASK_H);
+        CPU_RES(AF.lo, FLAG_H);
     }
 }
 

@@ -156,7 +156,7 @@ void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCar
     // subtract flag = 0
     setSubtractFlag(false);
     // half carry
-    uint16_t test = (reg & 0xF); // get the lower half nibble
+    uint16_t test = (reg & 0xF); // get the lower half nibble of reg
     test += (add & 0xF);         // lower half nibble of add
     if (test > 0xF)              // if overflow, set the half carry flag;
         setHalfCarryFlag(true);
@@ -185,7 +185,7 @@ void CPU::CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, bool useImmediate, bool subCar
         setHalfCarryFlag(true);
     reg -= sub;
 }
-// TODO
+// TODO: flags
 void CPU::CPU_8BIT_INC(uint8_t &reg)
 {
     AF.lo = 0;
@@ -323,75 +323,140 @@ void CPU::CPU_POP(Register &reg)
 // rotates & shifts
 void CPU::CPU_RLC(uint8_t &reg)
 {
-    reg <<= 1;
-    // TODO: check lsb & set carry flag
+    if ((reg >> 7) & 0x01)
+        setCarryFlag(true);
+    setSubtractFlag(false);
+    setHalfCarryFlag(false);
+    reg = (reg << 1) | getCarryFlag();
+    if (reg == 0)
+        setZeroFlag(true);
 }
 
 void CPU::CPU_RL(uint8_t &reg)
 {
-    reg <<= 1;
+    int oldcarry = getCarryFlag();
+    AF.lo = 0;
+    if ((reg >> 7) & 0x01)
+        setCarryFlag(true);
+    reg = (reg << 1) | oldcarry;
+    if (reg == 0)
+        setZeroFlag(true);
 }
-
+// rotate right to carry
 void CPU::CPU_RRC(uint8_t &reg)
 {
-    reg >>= 1;
-    // TODO: check lsb & set carry flag
+    if (reg & 0x01)
+        setCarryFlag(true);
+    setSubtractFlag(false);
+    setHalfCarryFlag(false);
+    reg = (reg >> 1) | (getCarryFlag() << 7);
+    if (reg == 0)
+        setZeroFlag(true);
 }
-
+// rotate right through carry
 void CPU::CPU_RR(uint8_t &reg)
 {
-    reg >>= 1;
+    int oldcarry = getCarryFlag();
+    AF.lo = 0;
+    if (reg & 0x01)
+        setCarryFlag(true);
+    reg = (reg >> 1) | (7 << oldcarry);
+    if (reg == 0)
+        setZeroFlag(true);
 }
 void CPU::CPU_SLA(uint8_t &reg)
 {
+    AF.lo = 0;
+    if ((reg >> 7) & 0x01)
+        setCarryFlag(true);
     reg <<= 1;
+    if (reg == 0)
+        setZeroFlag(true);
 }
 
 void CPU::CPU_SRA(uint8_t &reg)
 {
-    reg >>= 1;
+    int msb = (reg >> 7) & 0x01;
+    AF.lo = 0;
+    if (reg & 0x01)
+        setCarryFlag(true);
+    reg = (reg >> 1) | (msb << 7);
+    if (reg == 0)
+        setZeroFlag(true);
 }
 
 void CPU::CPU_SRL(uint8_t &reg)
 {
+    AF.lo = 0;
+    if (reg & 0x01)
+        setCarryFlag(true);
     reg >>= 1;
+    if (reg == 0)
+        setZeroFlag(true);
+    // pc += 2;
 }
 // shifts & rotate into memory
 void CPU::CPU_RR_MEM(uint16_t addr)
 {
     uint8_t n = memory->readByte(addr);
-    n >>= 1;
+    int oldcarry = getCarryFlag();
+    AF.lo = 0;
+    if (n & 0x01)
+        setCarryFlag(true);
+    n = (n >> 1) | (7 << oldcarry);
+    if (n == 0)
+        setZeroFlag(true);
     memory->writeByte(addr, n);
 }
 
 void CPU::CPU_RL_MEM(uint16_t addr)
 {
     uint8_t n = memory->readByte(addr);
-    n <<= 1;
+    int oldcarry = getCarryFlag();
+    AF.lo = 0;
+    if ((n >> 7) & 0x01)
+        setCarryFlag(true);
+    n = (n << 1) | oldcarry;
+    if (n == 0)
+        setZeroFlag(true);
     memory->writeByte(addr, n);
 }
 
 void CPU::CPU_SRA_MEM(uint16_t addr)
 {
     uint8_t n = memory->readByte(addr);
-    n >>= 1;
+    int msb = (n >> 7) & 0x01;
+    AF.lo = 0;
+    if (n & 0x01)
+        setCarryFlag(true);
+    n = (n >> 1) | (msb << 7);
+    if (n == 0)
+        setZeroFlag(true);
     memory->writeByte(addr, n);
 }
 
 void CPU::CPU_SLA_MEM(uint16_t addr)
 {
+    AF.lo = 0;
     uint8_t n = memory->readByte(addr);
+    if ((n >> 7) & 0x01)
+        setCarryFlag(true);
     n <<= 1;
+    if (n == 0)
+        setZeroFlag(true);
     memory->writeByte(addr, n);
-    // flag stuff
 }
-
+void CPU::CPU_SRL_MEM(uint16_t addr) {}
+void CPU::CPU_RLC_MEM(uint16_t addr) {}
+void CPU::CPU_RRC_MEM(uint16_t addr) {}
 // bit operations
 // TODO: test bit
 void CPU::CPU_BIT(uint8_t &n, uint8_t r)
 {
-    int mask = 1 << r; // TODO: fix
-    n &= mask;
+    AF.lo = 0;
+    if (~(n >> r) & 0x1)
+        setZeroFlag(true);
+    setHalfCarryFlag(true);
 }
 // TODO: set bit
 void CPU::CPU_SET(uint8_t &n, uint8_t r)
@@ -402,9 +467,17 @@ void CPU::CPU_SET(uint8_t &n, uint8_t r)
 // TODO: reset bit
 void CPU::CPU_RES(uint8_t &n, uint8_t r)
 {
-    n &= ~((uint8_t)1 << r);
+    n &= ~(1 << r);
 }
 
+void CPU::CPU_SWAP(uint8_t &n)
+{
+    n = ((n >> 4) & 0xF) | ((n << 4) & 0xF0);
+    AF.lo = 0;
+    if (n == 0)
+        setZeroFlag(true);
+    // pc += 2
+}
 // jumps
 void CPU::CPU_JP(uint16_t addr)
 {

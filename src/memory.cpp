@@ -10,18 +10,46 @@ using namespace std;
 // vram: 0x8000 - 9FFF (8kB)
 // IO: 0xFF00 -
 // hram: 0xFF80 - 0xFFFE
-// TODO: develop further
 MMU::MMU()
 {
-    // read bootstrap program from binary
-    memset(m_ROM, 0, sizeof(m_ROM));
-    // FILE *fp = fopen("DMG_ROM.bin", "rb");
-    //  fread(bootloader, sizeof(uint_8), 256, fp);
-    //  load game into memory
-    // FILE *rom = fopen(f_rom, "rb");
-    // fread(m_ROM, sizeof(uint8_t), 32768, rom);
-    // fclose(fp);
-    // fclose(rom);
+    rom_bank_no = 1;
+    ram_bank_no = 0;
+    enable_ram = false;
+    memset(&m_ram_banks, 0, sizeof(m_ram_banks));
+
+    m_ROM[0xFF05] = 0x00;
+    m_ROM[0xFF06] = 0x00;
+    m_ROM[0xFF05] = 0x00;
+    m_ROM[0xFF06] = 0x00;
+    m_ROM[0xFF07] = 0x00;
+    m_ROM[0xFF10] = 0x80;
+    m_ROM[0xFF11] = 0xBF;
+    m_ROM[0xFF12] = 0xF3;
+    m_ROM[0xFF14] = 0xBF;
+    m_ROM[0xFF16] = 0x3F;
+    m_ROM[0xFF17] = 0x00;
+    m_ROM[0xFF19] = 0xBF;
+    m_ROM[0xFF1A] = 0x7F;
+    m_ROM[0xFF1B] = 0xFF;
+    m_ROM[0xFF1C] = 0x9F;
+    m_ROM[0xFF1E] = 0xBF;
+    m_ROM[0xFF20] = 0xFF;
+    m_ROM[0xFF21] = 0x00;
+    m_ROM[0xFF22] = 0x00;
+    m_ROM[0xFF23] = 0xBF;
+    m_ROM[0xFF24] = 0x77;
+    m_ROM[0xFF25] = 0xF3;
+    m_ROM[0xFF26] = 0xF1;
+    m_ROM[0xFF40] = 0x91;
+    m_ROM[0xFF42] = 0x00;
+    m_ROM[0xFF43] = 0x00;
+    m_ROM[0xFF45] = 0x00;
+    m_ROM[0xFF47] = 0xFC;
+    m_ROM[0xFF48] = 0xFF;
+    m_ROM[0xFF49] = 0xFF;
+    m_ROM[0xFF4A] = 0x00;
+    m_ROM[0xFF4B] = 0x00;
+    m_ROM[0xFFFF] = 0x00;
 }
 // TODO: develop further. fix.
 void MMU::loadROM(char *rom)

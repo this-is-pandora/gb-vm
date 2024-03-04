@@ -1,4 +1,4 @@
-/*#include <gtest/gtest.h>
+#include <gtest/gtest.h>
 #include "../include/cpu.h"
 
 class FLAG_TEST : public testing::Test
@@ -6,8 +6,10 @@ class FLAG_TEST : public testing::Test
 protected:
     void SetUp() override
     {
-        cpu = new CPU();
+        mmu = new MMU();
+        cpu = new CPU(mmu);
     }
+    MMU *mmu;
     CPU *cpu;
 };
 
@@ -68,4 +70,4 @@ TEST_F(FLAG_TEST, SET_C_FLAG)
     cpu->setCarryFlag(false);
     bool val = cpu->getCarryFlag();
     EXPECT_EQ(val, false);
-} */
+}

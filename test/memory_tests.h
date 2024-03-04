@@ -14,16 +14,17 @@ protected:
 // read & writing
 TEST_F(MEM_TEST, READ_MEM)
 {
-    ASSERT_EQ(mmu->readByte(0x0), 0);
+    ASSERT_EQ(mmu->readByte(0xFF11), 0xBF);
 }
 
 TEST_F(MEM_TEST, WRITE_MEM)
 {
-    mmu->writeByte(0x0, 100);
-    uint8_t value = mmu->readByte(0x0);
+    mmu->writeByte(0xC050, 100);
+    uint8_t value = mmu->readByte(0xC050);
     ASSERT_EQ(value, 100);
 }
 
+/*
 // push & pop
 TEST_F(MEM_TEST, PUSH_STACK)
 {
@@ -35,6 +36,6 @@ TEST_F(MEM_TEST, POP_STACK)
 // DMA
 TEST_F(MEM_TEST, DMA)
 {
-}
+} */
 
 // memory banking

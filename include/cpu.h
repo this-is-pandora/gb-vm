@@ -129,7 +129,7 @@ private:
     void CPU_BIT(uint8_t &n, uint8_t r); // test bit
     void CPU_SET(uint8_t &n, uint8_t r); // set bit
     void CPU_RES(uint8_t &n, uint8_t r); // reset bit
-    void CPU_SWAP();                     // TODO: implement
+    void CPU_SWAP(uint8_t &n);
     // jumps
     void CPU_JP(uint16_t addr);
     void CPU_JR(int8_t n);
@@ -146,7 +146,7 @@ private:
     void executeExtendedOpcode(); // if opcode starts w/ 0xCB
 
 public:
-    CPU();
+    CPU(MMU *mmu);
     ~CPU();
 
     void status();
