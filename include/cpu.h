@@ -60,7 +60,7 @@ private:
         12, 12, 8, 4, 0, 16, 8, 32, 12, 8, 16, 4, 0, 0, 8, 32};
     int clocksum; // counts # of clock cycles passed
     int clockSpeed;
-
+    /*TODO: these are CPU states, perhaps put them in an enum */
     bool accessedMemory;
     bool cpuStopped;
     bool cpuHalted;
@@ -92,7 +92,7 @@ private:
     void CPU_8BIT_MEM_INC(uint16_t addr);
     void CPU_8BIT_DEC(uint8_t &reg);
     void CPU_8BIT_MEM_DEC(uint16_t addr);
-    void CPU_8BIT_CP(uint8_t &reg, uint8_t cp);
+    void CPU_8BIT_CP(uint8_t reg, uint8_t cp);
     void CPU_8BIT_AND(uint8_t &reg, uint8_t operand, bool useImmediate);
     void CPU_8BIT_OR(uint8_t &reg, uint8_t operand, bool useImmediate);
     void CPU_8BIT_XOR(uint8_t &reg, uint8_t operand, bool useImmediate);
@@ -126,7 +126,7 @@ private:
     void CPU_SRA_MEM(uint16_t addr);
     void CPU_SRL_MEM(uint16_t addr);
     // bits & bytes
-    void CPU_BIT(uint8_t &n, uint8_t r); // test bit
+    void CPU_BIT(uint8_t n, uint8_t r);  // test bit
     void CPU_SET(uint8_t &n, uint8_t r); // set bit
     void CPU_RES(uint8_t &n, uint8_t r); // reset bit
     void CPU_SWAP(uint8_t &n);

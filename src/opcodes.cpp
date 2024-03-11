@@ -145,6 +145,11 @@ void CPU::CPU_16BIT_REG_LD(uint16_t &reg, uint16_t src)
 // 8-bit arithmetic
 void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCarry)
 {
+    // TODO:
+    if (useImmediate)
+    {
+        add = readByte(pc++);
+    }
     // TODO: finish
     if (addCarry)
         if (getCarryFlag())
@@ -154,7 +159,6 @@ void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCar
     if (reg == 0)
         setZeroFlag(true);
     // subtract flag = 0
-    setSubtractFlag(false);
     // half carry
     uint16_t test = (reg & 0xF); // get the lower half nibble of reg
     test += (add & 0xF);         // lower half nibble of add
@@ -169,6 +173,13 @@ void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCar
 // TODO: same as above
 void CPU::CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, bool useImmediate, bool subCarry)
 {
+    if (useImmediate)
+        sub = readByte(pc++);
+    if (subCarry)
+    {
+        if (getCarryFlag())
+            sub++;
+    }
     AF.lo = 0;
     // 0 flag
     if ((reg - sub) == 0)
@@ -185,7 +196,7 @@ void CPU::CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, bool useImmediate, bool subCar
         setHalfCarryFlag(true);
     reg -= sub;
 }
-// TODO: flags
+
 void CPU::CPU_8BIT_INC(uint8_t &reg)
 {
     AF.lo = 0;
@@ -202,7 +213,11 @@ void CPU::CPU_8BIT_INC(uint8_t &reg)
 
 void CPU::CPU_8BIT_DEC(uint8_t &reg)
 {
+    AF.lo = 0;
     uint8_t val = reg - 1;
+    setSubtractFlag(true);
+    if (val == 0)
+        setZeroFlag(true);
     reg--;
 }
 
@@ -216,8 +231,7 @@ void CPU::CPU_SBC(uint8_t reg)
     CPU_8BIT_SUB(AF.hi, reg, false, true);
 }
 
-// TODO: remove reference
-void CPU::CPU_8BIT_CP(uint8_t &reg, uint8_t cp)
+void CPU::CPU_8BIT_CP(uint8_t reg, uint8_t cp)
 {
     uint8_t val = reg - cp;
     AF.lo = 0;
@@ -229,7 +243,7 @@ void CPU::CPU_8BIT_CP(uint8_t &reg, uint8_t cp)
     // carry flag
     if (reg < cp)
         setCarryFlag(true);
-    // TODO: half carry
+    // half carry
     int16_t test = reg & 0xF;
     test -= (cp & 0xF);
     if (test < 0)
@@ -238,21 +252,28 @@ void CPU::CPU_8BIT_CP(uint8_t &reg, uint8_t cp)
 // 16-bit arithmetic
 void CPU::CPU_16BIT_ADD(uint16_t &reg, uint16_t add)
 {
+    AF.lo = 0;
     uint16_t before = reg;
     reg += add;
-    setSubtractFlag(false);
     if ((before + add) > 0xFFFF)
         setCarryFlag(true);
-    else
-        setCarryFlag(false);
     if (((before & 0xFF00) & 0xF) + ((add >> 8) & 0xF))
         setHalfCarryFlag(true);
-    else
-        setHalfCarryFlag(false);
 }
 
 void CPU::CPU_16BIT_SUB(uint16_t &reg, uint16_t sub)
 {
+    AF.lo = 0;
+    setSubtractFlag(true);
+    if (reg == 0)
+        setZeroFlag(true);
+    // TODO: Half carry flag & carry flag
+    if (reg < sub)
+        setCarryFlag(true);
+    uint16_t test = reg & 0xF;
+    test -= (sub & 0xF);
+    if (test < 0)
+        setHalfCarryFlag(true);
     reg -= sub;
 }
 
@@ -310,13 +331,11 @@ void CPU::CPU_8BIT_XOR(uint8_t &reg, uint8_t operand, bool useImmediate)
 // stack operations
 void CPU::CPU_PUSH(Register reg)
 {
-    // TODO: check correctness
     memory->push(reg.value, sp);
 }
 
 void CPU::CPU_POP(Register &reg)
 {
-    // TODO: check for semantic errors
     reg.value = memory->pop(sp);
 }
 
@@ -437,34 +456,61 @@ void CPU::CPU_SRA_MEM(uint16_t addr)
 
 void CPU::CPU_SLA_MEM(uint16_t addr)
 {
-    AF.lo = 0;
     uint8_t n = memory->readByte(addr);
+    /*
+    AF.lo = 0;
     if ((n >> 7) & 0x01)
         setCarryFlag(true);
     n <<= 1;
     if (n == 0)
-        setZeroFlag(true);
+        setZeroFlag(true);*/
+    CPU_SLA(n);
     memory->writeByte(addr, n);
 }
-void CPU::CPU_SRL_MEM(uint16_t addr) {}
-void CPU::CPU_RLC_MEM(uint16_t addr) {}
-void CPU::CPU_RRC_MEM(uint16_t addr) {}
+
+void CPU::CPU_SRL_MEM(uint16_t addr)
+{
+    uint8_t n = readByte(addr);
+    /*
+    AF.lo = 0;
+    if (n & 0x01)
+        setCarryFlag(true);
+    n >>= 1;
+    if (n == 0)
+        setZeroFlag(true);*/
+    CPU_SRL(n);
+    writeByte(addr, n);
+}
+
+void CPU::CPU_RLC_MEM(uint16_t addr)
+{
+    uint8_t n = readByte(addr);
+    CPU_RLC(n);
+    writeByte(addr, n);
+}
+
+void CPU::CPU_RRC_MEM(uint16_t addr)
+{
+    uint8_t n = readByte(addr);
+    CPU_RRC(n);
+    writeByte(addr, n);
+}
+
 // bit operations
-// TODO: test bit
-void CPU::CPU_BIT(uint8_t &n, uint8_t r)
+void CPU::CPU_BIT(uint8_t n, uint8_t r)
 {
     AF.lo = 0;
     if (~(n >> r) & 0x1)
         setZeroFlag(true);
     setHalfCarryFlag(true);
 }
-// TODO: set bit
+
 void CPU::CPU_SET(uint8_t &n, uint8_t r)
 {
     int mask = 1 << r;
     n |= mask;
 }
-// TODO: reset bit
+
 void CPU::CPU_RES(uint8_t &n, uint8_t r)
 {
     n &= ~(1 << r);
@@ -517,5 +563,3 @@ void CPU::CPU_RETI()
     CPU_RET();
     // return
 }
-
-// Extended opcodes (CB XX)
