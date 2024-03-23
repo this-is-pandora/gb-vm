@@ -21,5 +21,5 @@ int main(int argc, char **argv[])
         gb->emulate(); // play game
     }
     delete gb;
-    return 1;
+    return 0;
 }

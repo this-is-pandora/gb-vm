@@ -4,6 +4,7 @@ set(SOURCES
     register_tests.h
     flag_tests.h
     memory_tests.h
+    instruction_tests.h
     ../src/opcodes.cpp
     ../src/cpu.cpp
     ../src/memory.cpp

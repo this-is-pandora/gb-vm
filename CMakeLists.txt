@@ -18,3 +18,5 @@ include(CTest)
 include_directories(include)
 add_subdirectory(test)
 
+# add_executable(gbvm ${SOURCES} ${INCLUDE_DIRECTORIES})
+

@@ -1,26 +1,26 @@
-// #include <gtest/gtest.h>
-// #include "../include/cpu.h"
-/*
-class INSTRCTN_TEST : public Testing::test
+#include <gtest/gtest.h>
+#include "../include/cpu.h"
+#include "../include/memory.h"
+
+class INSTRCTN_TEST : public testing::Test
 {
 protected:
       void SetUp() override
       {
-            cpu = new CPU();
+            mmu = new MMU();
+            cpu = new CPU(mmu);
       }
+      MMU *mmu;
       CPU *cpu;
-}; */
+};
 
-/***
- * Tests individual instructions, e.g. LD, ADD, etc.
- ***/
+/* Tests individual instructions, e.g. LD, ADD, etc. */
 
-// loading, push, & pop
-// addition & subtraction
-// logical operations
-//
+/* basic program that loads some values into several registers
+then performs some arithmetic ops */
+TEST_F(INSTRCTN_TEST, BASIC_PRGRM)
+{
+}
 
-/*********
- * very basic program that loads a value into Register A
- * and then performs some arithmetic on Register A
- **********/
+/* test stack methods */
+// extended instructions

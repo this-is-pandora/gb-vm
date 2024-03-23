@@ -28,12 +28,15 @@ private:
     MMU *mmu;
     CPU *cpu;
     GPU *gpu; // aka the ppu or "pixel processing unit"
+    int cycles;
+    bool unpaused;
     // GUI *gui;
     // Joypad *jp;
     // SPU *spu;
 public:
     GameBoy();
     ~GameBoy();
+    void initGameBoy();
     void executeInstrctn();
     void handleInput();
     void scanLine();

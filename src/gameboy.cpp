@@ -5,8 +5,6 @@ GameBoy::GameBoy()
     mmu = new MMU();
     cpu = new CPU(mmu);
     gpu = new GPU(mmu);
-    // gui = new GUI();
-    // ppu = new PPU();
     // jp = new JoyPad();
     // spu = new SPU();
 }
@@ -25,14 +23,23 @@ void GameBoy::update()
     // emulation loop
     while (current_cycles < MAX_CYCLES)
     {
-        // int cycles = executeNextOpcode();
-        // current_cycles += cycles;
-        // updateTimer();
-        // updateGraphics();
-        // handleInterrupts();
         current_cycles += cpu->tick();
+        gpu->tick(current_cycles);
     }
     // renderGraphics();
+}
+
+void GameBoy::emulate()
+{
+    if (!unpaused)
+    {
+        cycles = cpu->tick();
+        gpu->tick(cycles);
+        // TODO: handle timers & interrupts out here?
+        // TODO: handle window events & controls in VBLANK
+        // if (mmu->readByte())
+        // handleWindowEvents(event);
+    }
 }
 /*
 void GameBoy::game_loop() {

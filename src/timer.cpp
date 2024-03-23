@@ -5,14 +5,11 @@ Timer::Timer(MMU *memory)
     memory = memory;
 }
 
-void Timer::requestTimerInterrupt()
-{
-}
-
 // TODO: finish: fix and check
-void Timer::handleTimers(int cycles)
+void Timer::handleTimers(int cycles, InterruptHandler *interruptHandler)
 {
-    memory->incDIV();
+    // memory->incDIV();
+    handleDivider(cycles);
     if (timerEnabled)
     {
         t_clocksum += cycles;
@@ -24,9 +21,10 @@ void Timer::handleTimers(int cycles)
             // & reset timer to modulo
             if (memory->readByte(TIMA) >= 0xFF)
             {
-                // TODO: TIMA = TMC
+                // request Timer interrupt
+                interruptHandler->requestInterrupt(TIMER);
+                // set timer to modulo
                 memory->writeByte(TIMA, memory->readByte(TMA));
-                requestTimerInterrupt();
             }
             t_clocksum -= (4194304 / frequency);
         }
@@ -56,20 +54,29 @@ void Timer::setClockFrequency()
     switch (freq)
     {
     case 0:
-        t_clocksum = 1024;
-        break; // 4.19MHZ / 4096
+        frequency = frequencies[0];
+        break; // 4.19MHZ / 4096 / 1024
     case 1:
-        t_clocksum = 16;
-        break; // 262144
+        frequency = frequencies[1];
+        break; // 262144 / 16
     case 2:
-        t_clocksum = 64;
-        break; // 65536
+        frequency = frequencies[2];
+        break; // 65536 /
     case 3:
-        t_clocksum = 256;
-        break; // 16382
+        frequency = frequencies[3];
+        break; // 16382 / 256
     }
 }
 
+void Timer::handleDivider(int cycles)
+{
+    div_clocksum += cycles;
+    if (div_clocksum >= 256)
+    {
+        div_clocksum -= 256;
+        memory->incAddr(DIV_REG);
+    }
+}
 // increment the divider register
 void incDiv(uint16_t dr_addr, uint8_t cycles)
 {

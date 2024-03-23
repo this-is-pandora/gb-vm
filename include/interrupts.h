@@ -17,14 +17,11 @@ enum Interrupts
 class InterruptHandler
 {
 private:
-    // bool interruptsEnabled;
     MMU *mmu;
-    // bool interruptsEnabled = false;
     bool readInterrupt(Interrupts i);
 
 public:
     InterruptHandler(MMU *mmu);
-    // TODO: define interrupt routines
     void handleInterrupts(uint16_t &pc, uint16_t &sp);
     void requestInterrupt(int id);
     void serviceInterrupt(int id, uint16_t &pc, uint16_t &sp);

@@ -17,7 +17,6 @@ CPU::CPU(MMU *mmu)
     cpuHalted = false;
     debugMode = false;
 
-    // memory = new MMU(); // todo: fix
     memory = mmu;
     h_interrupts = new InterruptHandler(memory);
     h_timer = new Timer(memory);
@@ -126,22 +125,6 @@ void CPU::setHalfCarryFlag(bool val)
     else
     {
         CPU_RES(AF.lo, FLAG_H);
-    }
-}
-
-void CPU::checkFlags(bool flag_z, bool flag_n, bool flag_h, bool flag_c)
-{
-    if (flag_z)
-    {
-    }
-    if (flag_n)
-    {
-    }
-    if (flag_h)
-    {
-    }
-    if (flag_c)
-    {
     }
 }
 
@@ -1038,7 +1021,6 @@ int CPU::execute(uint8_t opcode)
         CPU_REG_ROM_LD(AF.hi, (0xFF00 + BC.lo));
         break;
     case 0xF3: // DI, aka disable interrupt
-        // op_set_ime()
         CPU_DI();
         break;
     // case 0xF4: // TODO: None?
@@ -1088,7 +1070,7 @@ int CPU::execute(uint8_t opcode)
     case 0xFD: // illegal
     default:
     {
-        printf("Unsupported opcode: 0x%02x at 0x%04x\n\n\n", opcode, pc);
+        printf("Unsupported opcode: 0x%02x at 0x%04x\n", opcode, pc);
         exit(EXIT_FAILURE);
         pc++;
     }
@@ -1105,7 +1087,7 @@ int CPU::tick()
     {
         if (!cpuHalted)
         {
-            // if EI/DI is called, it will enable interrupts after the next instruction
+            // if EI/DI is called, it will enable/disable interrupts after the next instruction
             if (pendingEnable)
             { // TODO: rework this code
                 memory->enableInterrupts(true);
@@ -1125,7 +1107,7 @@ int CPU::tick()
             cycles = 1;
         // 3. handle timer
         if (h_timer->clockEnabled())
-            h_timer->handleTimers(cycles);
+            h_timer->handleTimers(cycles, h_interrupts);
         // 4. handle interrupts
         if (memory->interruptsEnabled())
             h_interrupts->handleInterrupts(pc, sp);

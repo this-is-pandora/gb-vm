@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "memory.h"
+#include "interrupts.h"
 
 // memory addresses
 #define DIV_REG 0xFF04 // divider register
@@ -27,19 +28,20 @@ class Timer
 private:
     bool timerEnabled;
     // TMA frequencies
-    int frequencies[4] = {4096, 262144, 65536, 16384};
-    int frequency = frequencies[0]; // 4096
+    int frequencies[4] = {4096, 262144, 65536, 16384}; // TODO: rewrite this code
+    int frequency = frequencies[0];                    // 4096
 
     // timer counter is 1024 by default
     // 4194304/4096 = 1024
-    int t_clocksum = CLOCKSPEED / frequency;
+    int t_clocksum = CLOCKSPEED / frequency; // TODO fix
+    int div_clocksum = 0;
     MMU *memory;
 
 public:
     Timer(MMU *memory = NULL);
-    void handleTimers(int cycles);
+    void handleTimers(int cycles, InterruptHandler *interruptHandler);
+    void handleDivider(int cycles);
     bool clockEnabled();
     uint8_t readClockFrequency();
     void setClockFrequency();
-    void requestTimerInterrupt();
 };

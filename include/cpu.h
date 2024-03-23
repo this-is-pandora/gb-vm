@@ -159,8 +159,6 @@ public:
     void setCarryFlag(bool val);
     bool getHalfCarryFlag() const;
     void setHalfCarryFlag(bool val);
-    void checkFlags(bool flag_z, bool flag_n, bool flag_h, bool flag_c);
-
     // read memory
     uint8_t readByte(uint16_t addr);
     uint16_t readWord(uint16_t addr);
