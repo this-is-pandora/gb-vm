@@ -16,8 +16,8 @@ void GPU::initGraphics()
     SDL_RenderSetLogicalSize(renderer, SCREEN_W, SCREEN_H);
     SDL_SetWindowResizable(window, SDL_TRUE);
 
-    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24,
-                                SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
+    /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24,
+                                SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H); */
     textureA = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
                                  SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
 
@@ -52,23 +52,8 @@ uint8_t GPU::read8000()
 // 0x8800 addressing mode
 uint8_t GPU::read8800()
 {
-    return (mmu->readByte(tileData + 0x800 + ((uint8_t)tileID * 0x10) + (y_off % 8 * 2)) >> (7 - (x_off % 8)) & 0x1) +
+    return (mmu->readByte(tileData + 0x800 + ((int8_t)tileID * 0x10) + (y_off % 8 * 2)) >> (7 - (x_off % 8)) & 0x1) +
            ((mmu->readByte(tileData + 0x800 + ((int8_t)tileID * 0x10) + (y_off % 8 * 2) + 1) >> (7 - (x_off % 8)) & 0x1) * 2);
-}
-
-void GPU::createBG()
-{
-    int color_val;
-    tileMap = getTileMap(BG_TILEMAP);
-    tileData = getTileData(BG_WIN_TILES);
-    for (int i = 0; i < 256; i++)
-    {
-        for (int j = 0; j < 256; j++)
-        {
-            tileID = mmu->readByte(tileMap + (i / 8 * 32) + (j / 8));
-            color_val = mmu->readByte(tileData + (tileID * 0x10));
-        }
-    }
 }
 
 // fill the background map (w/ opacity) array
@@ -123,19 +108,87 @@ void GPU::calculateBG()
 
 void GPU::calculateWindowMap()
 {
-    // TODO: fix this
+    int color, color_val, bg_palette;
     tileMap = getTileData(WIN_ENABLE);
     tileData = getTileData(BG_WIN_TILES);
-    for (int r = 0; r < 256; r++)
+    LCDC = mmu->readByte(LCD_CNTRL_REG);
+    winX = mmu->readByte(WX) - 7;
+    winY = mmu->readByte(WY);
+    bg_palette = mmu->readByte(BG_COLOR_PALETTE);
+    // check if window is enabled
+    if (((LCDC >> WIN_ENABLE) & 0x01) == 1)
     {
-        for (int c = 0; c < 256; c++)
+        for (int j = 0; j < 256; j++)
         {
-            tileID = mmu->readByte(tileMap + ((r / 8 * 32) + (c / 8)));
-            // color val
+            tileID = mmu->readByte(tileMap + ((row / 8 * 32) + (j / 8)));
+            color_val = 0; // TODO
+            color = (bg_palette >> (2 * color_val)) & 3;
+            for (int i = 0; i < 4; i++)
+            {
+                if (i == 3)
+                    winMapA[(row * 256 * 4) + (j * 4) + i] = 0xFF;
+                else
+                    winMapA[(row * 256 * 4) + (j * 4) + i] = COLORS[color * 3 + i];
+            }
         }
     }
 }
-void GPU::calculateSpriteMap() {}
+void GPU::calculateSpriteMap()
+{
+    uint8_t flags, x, y, height, color_val;
+    uint16_t palette, color;
+    if ((mmu->readByte(LCD_CNTRL_REG) >> OBJ_ENABLE) & 0x01)
+    {
+        // loop through each object (4 bytes each) in the OAM
+        /*
+         * byte 0: y-position
+         * byte 1: x-position
+         * byte 2: tile ID
+         * byte 3: attributes/flags
+         *   bit 0-2: CGB only
+         *   bit 3: CGB only
+         *   bit 4: DMG palette
+         *   bit 5: X flip
+         *   bit 6: y flip
+         *   bit 7: priority
+         */
+        for (uint16_t i = OAM; i <= OAM_END; i += 4)
+        {
+            y = mmu->readByte(i);
+            x = mmu->readByte(i + 1);
+            tileID = mmu->readByte(i + 2);
+            flags = mmu->readByte(i + 3);
+            // TODO: set height
+            height = 0;
+            if (row >= (y - 16) && row <= ((y - 16) + height))
+            {
+                for (int k = 0; k < height; k++)
+                {
+                    for (int u = 0; u < 8; u++)
+                    {
+                        // TODO: get color value
+                        // TODO: get RGB color from palette
+                        // TODO: set sprite map array
+                        palette = ((flags >> 4) & 1) ? SPRITE_PALETTE_1 : SPRITE_PALETTE_2;
+                        color = (mmu->readByte(palette) >> (2 * color_val)) & 3;
+                        // if color_val == 0, then it is transparent
+                        if (color_val != 0 && ((y + k) <= 0xFF) && ((x + u) <= 0xFF))
+                        {
+                            for (int j = 0; j < 4; j++)
+                            {
+                                if (j == 3)
+                                    spriteMapA[((y + k - 16) * 256 * 4) + ((x + u - 8) * 4) + j] = 0xFF;
+                                else
+                                    spriteMapA[((y + k - 16) * 256 * 4) + ((x + u - 8) * 4) + j] = COLORS[color * 3 + j];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 /*
 void GPU::drawScanline()
 {
@@ -165,9 +218,6 @@ void GPU::drawFrame()
         {
             y_offA = (row * 256 * 4);
             x_offA = (col * 4);
-            // TODO: draw bg
-            // TODO: overite bg & draw window on top
-            // TODO: overwrite window/bg & draw sprites on top
             for (int i = 0; i < 4; i++) // draw BG
             {
                 f_bufferA[(row * SCREEN_W * 4) + (col * 4) + i] = bgMapA[y_offA + x_offA + i];
@@ -200,17 +250,52 @@ void GPU::tick(int cycles)
     switch (mode)
     {
     case H_BLANK:
-        handle_HBlank();
-        break;
+    {
+        if (g_clocksum >= 204)
+        {
+            g_clocksum = 0;
+            handle_HBlank(); // TODO
+            if (line == 143)
+            {
+                mode = V_BLANK;
+                // request interrupt
+            }
+            else
+                mode = OAM_SCAN;
+        }
+    }
+    break;
     case V_BLANK:
-        handle_VBlank();
-        break;
+    {
+        if (g_clocksum >= 456)
+        {
+            g_clocksum = 0;
+            handle_VBlank(); // TODO
+            mode = OAM_SCAN;
+        }
+    }
+    break;
     case OAM_SCAN:
-        scanOAM();
-        break;
+    {
+        if (g_clocksum >= 80)
+        {
+            g_clocksum = 0;
+            scanOAM();
+            mode = DRAW_PIXELS;
+        }
+    }
+    break;
     case DRAW_PIXELS:
-        drawPixels();
-        break;
+    {
+        if (g_clocksum >= 172)
+        {
+            g_clocksum = 0;
+            mode = H_BLANK;
+            // render tiles
+            drawPixels(); // TODO
+        }
+    }
+    break;
     default:
         break;
     }

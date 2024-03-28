@@ -52,6 +52,11 @@
 #define LCD_CNTRL_REG 0xFF40
 #define LCD_STAT_REG 0xFF41
 
+// sprite stuff
+#define OAM 0xFE00
+#define OAM_END 0xFE9F
+#define SPT 0x8000 // sprite pattern table
+
 #define SCY 0xFF42 // scroll y
 #define SCX 0xFF43 // scroll x
 #define WY 0xFF4A  // window Y position
@@ -59,7 +64,7 @@
 
 // LCD Status Register
 //  holds values from 0 - 153 w/ 144 - 153 indicating the VBLANK period
-#define CURRENT_SCANLINE 0xFF44 // AKA the LY register
+#define CURRENT_SCANLINE 0xFF44 // AKA the LY register. Stores the current scanline
 #define LYC 0xFF45              // if LY = LYC, the STAT interrupt is requested
 
 // color palettes
@@ -77,8 +82,8 @@
 #define WIN_TILEMAP 6
 #define LCD_PPU_ENABLE 7
 // the true resolution is 256 x 256 pixels and each pixel is 3 bytes each
-#define FB_SIZE 196608   // 256 * 256 * 3
-#define FB_SIZE_A 262144 // 256 * 256 * 4
+#define FB_SIZE 196608   // f_buffer size: 256 * 256 * 3
+#define FB_SIZE_A 262144 // f_bufferA size: 256 * 256 * 4
 
 // TODO: implement methods for LCD registers
 // TODO: VRAM methods
@@ -130,9 +135,8 @@ private:
     PPU_MODES mode;
     // GUI items
     SDL_Window *window;
-    SDL_Surface *surface;
     SDL_Renderer *renderer;
-    SDL_Texture *texture;
+    // SDL_Texture *texture;
     SDL_Texture *textureA;
     SDL_Event event;
 
