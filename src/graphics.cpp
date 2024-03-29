@@ -246,7 +246,6 @@ void GPU::drawFrame()
 void GPU::tick(int cycles)
 {
     g_clocksum += cycles;
-    // TODO: implement modes
     switch (mode)
     {
     case H_BLANK:
@@ -254,11 +253,14 @@ void GPU::tick(int cycles)
         if (g_clocksum >= 204)
         {
             g_clocksum = 0;
-            handle_HBlank(); // TODO
+            // TODO: inc. LY register
             if (line == 143)
             {
                 mode = V_BLANK;
-                // request interrupt
+                // TODO: request interrupt
+                calculateBG();
+                calculateWindowMap();
+                calculateSpriteMap();
             }
             else
                 mode = OAM_SCAN;
@@ -270,8 +272,16 @@ void GPU::tick(int cycles)
         if (g_clocksum >= 456)
         {
             g_clocksum = 0;
-            handle_VBlank(); // TODO
-            mode = OAM_SCAN;
+            if (line == 0)
+            {
+                mode = OAM_SCAN;
+            }
+            else
+            {
+                // TODO: inc. LY register
+                if (line == 0)
+                    mode = OAM_SCAN;
+            }
         }
     }
     break;
@@ -280,7 +290,6 @@ void GPU::tick(int cycles)
         if (g_clocksum >= 80)
         {
             g_clocksum = 0;
-            scanOAM();
             mode = DRAW_PIXELS;
         }
     }
@@ -292,7 +301,7 @@ void GPU::tick(int cycles)
             g_clocksum = 0;
             mode = H_BLANK;
             // render tiles
-            drawPixels(); // TODO
+            drawFrame();
         }
     }
     break;

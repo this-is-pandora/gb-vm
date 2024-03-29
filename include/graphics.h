@@ -150,6 +150,9 @@ public:
     GPU(MMU *memory)
     {
         memory = memory;
+        line = 0;
+        g_clocksum = 0;
+        mode = V_BLANK;
         screenData[160 / 2][144 / 2][0] = 0xFF;
         screenData[160 / 2][144 / 2][1] = 0;
         screenData[160 / 2][144 / 2][2] = 0;

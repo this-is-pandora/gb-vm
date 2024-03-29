@@ -33,8 +33,8 @@ void GameBoy::emulate()
 {
     if (!unpaused)
     {
-        cycles = cpu->tick();
-        gpu->tick(cycles);
+        cycles = cpu->tick(); // execute instrctns.
+        gpu->tick(cycles);    // step the GPU
         // TODO: handle timers & interrupts out here?
         // TODO: handle window events & controls in VBLANK
         // if (mmu->readByte())
