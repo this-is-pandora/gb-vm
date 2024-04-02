@@ -105,7 +105,6 @@ void CPU::CPU_EI()
 }
 
 // CPU LOAD instructions
-// TODO: fix register to register
 void CPU::CPU_REG_LD(uint8_t &reg, uint8_t load)
 {
     reg = load;
@@ -145,12 +144,10 @@ void CPU::CPU_16BIT_REG_LD(uint16_t &reg, uint16_t src)
 // 8-bit arithmetic
 void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCarry)
 {
-    // TODO:
     if (useImmediate)
     {
         add = readByte(pc++);
     }
-    // TODO: finish
     if (addCarry)
         if (getCarryFlag())
             add += 1;
@@ -170,7 +167,6 @@ void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCar
     reg += add;
 }
 
-// TODO: same as above
 void CPU::CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, bool useImmediate, bool subCarry)
 {
     if (useImmediate)
@@ -302,6 +298,8 @@ void CPU::CPU_16BIT_DEC(uint16_t &reg)
 void CPU::CPU_8BIT_AND(uint8_t &reg, uint8_t operand, bool useImmediate)
 {
     // reg = (reg & operand);
+    if (useImmediate)
+        operand = memory->readByte(pc++);
     reg &= operand;
     AF.lo = 0;
     // 0-flag
@@ -314,6 +312,8 @@ void CPU::CPU_8BIT_AND(uint8_t &reg, uint8_t operand, bool useImmediate)
 void CPU::CPU_8BIT_OR(uint8_t &reg, uint8_t operand, bool useImmediate)
 {
     // reg = (reg | operand);
+    if (useImmediate)
+        operand = memory->readByte(pc++);
     reg |= operand;
     AF.lo = 0;
     if (reg == 0)
@@ -322,6 +322,8 @@ void CPU::CPU_8BIT_OR(uint8_t &reg, uint8_t operand, bool useImmediate)
 
 void CPU::CPU_8BIT_XOR(uint8_t &reg, uint8_t operand, bool useImmediate)
 {
+    if (useImmediate)
+        operand = memory->readByte(pc++);
     reg ^= operand;
     AF.lo = 0;
     if (reg == 0)

@@ -14,20 +14,16 @@
 0xFF80-0xFFFE: HRAM
 0xFFFF: IER
 */
-
-// TODO: implement a Memory class
 class MMU
 {
 private:
     uint8_t rom_bank_no; // always 1 or above, never 0
-    uint8_t ram_bank_no;
-    // in the cartridge
-    // each ROM bank is 16KB, so 125 ROM banks * 16KB = 2,000,000
+    uint8_t ram_bank_no; // ram bank currently in use
     uint8_t m_rom_banks[0x200000];
-    // 4 RAM banks * 0x2000 bytes each = 0x8000 total
     uint8_t m_ram_banks[0x8000];
-    uint8_t bootloader[0x100]; // stores booting code DMG_bin
-    uint8_t m_ROM[0x10000];    // 65536 bytes
+
+    // uint8_t bootloader[0x100]; // stores booting code
+    uint8_t memory[0x10000]; // 65536 bytes
 
     bool MBC1, MBC2, MBC3;
     bool enable_ram;
@@ -36,8 +32,10 @@ private:
 
 public:
     MMU();
-    void loadROM(char *rom);
-    // banking stuff
+    void loadROM(char *rom, size_t size);
+    void loadBootROM();
+    void unloadBootROM();
+    // memory banking
     void checkMBC();
     void enableRAMBank(uint16_t addr, uint8_t value);
     void changeROMBank(uint8_t value);

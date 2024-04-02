@@ -34,8 +34,8 @@ class CPU
 {
 private:
     Register AF, BC, DE, HL;
-    uint16_t sp = 0xFFFE;
-    uint16_t pc = 0x0100;
+    uint16_t sp = 0x0;              // 0xFFFE
+    uint16_t pc = 0x0;              // will be 0x0100 after booting sequence
     MMU *memory;                    // memory management unit
     InterruptHandler *h_interrupts; // interrupt handler
     Timer *h_timer;                 // timer handler
@@ -58,6 +58,23 @@ private:
         8, 12, 12, 0, 12, 16, 8, 32, 8, 8, 12, 0, 12, 0, 8, 32,
         12, 12, 8, 0, 0, 16, 8, 32, 16, 4, 16, 0, 0, 0, 8, 32,
         12, 12, 8, 4, 0, 16, 8, 32, 12, 8, 16, 4, 0, 0, 8, 32};
+    uint8_t op_ext_cycles[0x100] = {
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,
+        8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,
+        8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,
+        8, 8, 8, 8, 8, 8, 12, 8, 8, 8, 8, 8, 8, 8, 12, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8,
+        8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8};
     int clocksum; // counts # of clock cycles passed
     int clockSpeed;
     /*TODO: these are CPU states, perhaps put them in an enum */
@@ -65,10 +82,9 @@ private:
     bool cpuStopped;
     bool cpuHalted;
     bool pendingEnable, pendingDisable = false;
-    // bool interruptsEnabled; // ime
     bool debugMode;
-
-    // CPU control methods
+    // TODO: move these instructions into an InstructionSet class maybe
+    //  CPU control methods
     void CPU_NOP();  // no operation
     void CPU_STOP(); // halt CPU & LCD display until button pressed
     void CPU_CPL();  // complement A

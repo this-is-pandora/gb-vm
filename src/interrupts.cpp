@@ -19,8 +19,8 @@ void InterruptHandler::requestInterrupt(int id)
 
 void InterruptHandler::serviceInterrupt(int id, uint16_t &pc, uint16_t &sp)
 {
-    /* disable interrupt
-     change IER so cpu knows interrupt has been serviced */
+    // disable interrupt
+    // change IER so cpu knows interrupt has been serviced
     mmu->enableInterrupts(false);
     uint8_t reqs = mmu->readByte(IER);
     reqs &= ~(1 << id);
@@ -39,6 +39,8 @@ void InterruptHandler::serviceInterrupt(int id, uint16_t &pc, uint16_t &sp)
         break;
     case JOYPAD:
         pc = 0x60;
+        break;
+    default:
         break;
     }
 }

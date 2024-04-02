@@ -5,7 +5,6 @@ Timer::Timer(MMU *memory)
     memory = memory;
 }
 
-// TODO: finish: fix and check
 void Timer::handleTimers(int cycles, InterruptHandler *interruptHandler)
 {
     // memory->incDIV();
@@ -75,17 +74,5 @@ void Timer::handleDivider(int cycles)
     {
         div_clocksum -= 256;
         memory->incAddr(DIV_REG);
-    }
-}
-// increment the divider register
-void incDiv(uint16_t dr_addr, uint8_t cycles)
-{
-    uint8_t divRegister = 0;
-    uint8_t divCounter = 0;
-    divRegister += cycles;
-    if (divCounter >= 255)
-    {
-        divCounter = 0;
-        // memory[0xFF04]++; // TODO: fix
     }
 }

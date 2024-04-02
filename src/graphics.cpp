@@ -21,9 +21,9 @@ void GPU::initGraphics()
     textureA = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
                                  SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
 
-    memset(bgMap, 0x0, FB_SIZE);
-    memset(spriteMap, 0x69, FB_SIZE);
-    memset(winMap, 0x0, FB_SIZE);
+    /* memset(bgMap, 0x0, FB_SIZE);
+     memset(spriteMap, 0x69, FB_SIZE);
+     memset(winMap, 0x0, FB_SIZE);*/
     memset(bgMapA, 0x0, FB_SIZE_A);
     memset(spriteMapA, 0x0, FB_SIZE_A);
     memset(winMapA, 0x0, FB_SIZE_A);
@@ -33,15 +33,15 @@ void GPU::initGraphics()
 
     mmu->writeByte(LCD_STAT_REG, 0x80);
 }
-// TODO: a tile map consists of tile IDs
+
 uint16_t GPU::getTileMap(int bit)
 {
-    return (((mmu->readByte(LCD_CNTRL_REG) >> BG_TILEMAP) & 1) == 1) ? 0x9C00 : 0x9800;
+    return (((mmu->readByte(LCD_CNTRL_REG) >> bit) & 1) == 1) ? 0x9C00 : 0x9800;
 }
 // consists of actual tiles, each of which are indexed by tile IDs (stored in tile maps)
 uint16_t GPU::getTileData(int bit)
 {
-    return (((mmu->readByte(LCD_CNTRL_REG) >> BG_WIN_TILES) & 1) == 1) ? 0x8000 : 0x8800;
+    return (((mmu->readByte(LCD_CNTRL_REG) >> bit) & 1) == 1) ? 0x8000 : 0x8800;
 }
 
 uint8_t GPU::read8000()
@@ -54,6 +54,17 @@ uint8_t GPU::read8800()
 {
     return (mmu->readByte(tileData + 0x800 + ((int8_t)tileID * 0x10) + (y_off % 8 * 2)) >> (7 - (x_off % 8)) & 0x1) +
            ((mmu->readByte(tileData + 0x800 + ((int8_t)tileID * 0x10) + (y_off % 8 * 2) + 1) >> (7 - (x_off % 8)) & 0x1) * 2);
+}
+
+void GPU::incScanLine()
+{
+    line++;
+    mmu->writeByte(CURRENT_SCANLINE, line);
+    if (line > 153)
+    {
+        line = 0;
+        mmu->writeByte(CURRENT_SCANLINE, 0);
+    }
 }
 
 // fill the background map (w/ opacity) array
@@ -75,7 +86,7 @@ void GPU::calculateBG()
     for (int i = 0; i < 256; i++)
     {
         int color_val;
-        y_off = row + scrollY;
+        y_off = line + scrollY;
         x_off = i + scrollX;
         tileID = mmu->readByte(tileMap + (y_off / 8 * 32) + (x_off / 8));
         if (tileData == 0x8800)
@@ -99,9 +110,9 @@ void GPU::calculateBG()
              * index = (x*height*depth) + (y*depth) + z
              */
             if (j == 3)
-                bgMapA[(row * 256 * 4) + (i * 4) + j] = 0xFF;
+                bgMapA[(line * 256 * 4) + (i * 4) + j] = 0xFF;
             else
-                bgMapA[(row * 256 * 4) + (i * 4) + j] = COLORS[color * 3 + j];
+                bgMapA[(line * 256 * 4) + (i * 4) + j] = COLORS[color * 3 + j];
         }
     }
 }
@@ -120,15 +131,15 @@ void GPU::calculateWindowMap()
     {
         for (int j = 0; j < 256; j++)
         {
-            tileID = mmu->readByte(tileMap + ((row / 8 * 32) + (j / 8)));
+            tileID = mmu->readByte(tileMap + ((line / 8 * 32) + (j / 8)));
             color_val = 0; // TODO
             color = (bg_palette >> (2 * color_val)) & 3;
             for (int i = 0; i < 4; i++)
             {
                 if (i == 3)
-                    winMapA[(row * 256 * 4) + (j * 4) + i] = 0xFF;
+                    winMapA[(line * 256 * 4) + (j * 4) + i] = 0xFF;
                 else
-                    winMapA[(row * 256 * 4) + (j * 4) + i] = COLORS[color * 3 + i];
+                    winMapA[(line * 256 * 4) + (j * 4) + i] = COLORS[color * 3 + i];
             }
         }
     }
@@ -158,17 +169,35 @@ void GPU::calculateSpriteMap()
             x = mmu->readByte(i + 1);
             tileID = mmu->readByte(i + 2);
             flags = mmu->readByte(i + 3);
-            // TODO: set height
-            height = 0;
-            if (row >= (y - 16) && row <= ((y - 16) + height))
+            // checks whether it is a regular sprite or a 'tall' sprite
+            // a regular sprite is 8x8 pixels, a tall sprite is 8x16 pixels
+            height = ((mmu->readByte(LCD_CNTRL_REG) >> OBJ_SIZE) & 0x01) ? 16 : 8;
+            if (line >= (y - 16) && line <= ((y - 16) + height))
             {
                 for (int k = 0; k < height; k++)
                 {
                     for (int u = 0; u < 8; u++)
                     {
-                        // TODO: get color value
-                        // TODO: get RGB color from palette
-                        // TODO: set sprite map array
+                        switch (flags & 0x60)
+                        {
+                        case 0x00: // no flip
+                            color_val = (mmu->readByte(SPT + (tileID * 0x10) + (u * 2)) >> (7 - u) & 0x01) + (mmu->readByte(SPT + (tileID * 0x10) + (u * 2) + 1) >> u & 0x01) * 2;
+                            break;
+                        case 0x20: // x-flip
+                            color_val = (mmu->readByte(SPT + (tileID * 0x10) + (k * 2)) >> u & 0x1) + (mmu->readByte(SPT + (tileID * 0x10) + (k * 2) + 1) >> u & 0x1) * 2;
+                            break;
+                        case 0x40: // y-flip
+                            color_val = (mmu->readByte(SPT + (tileID * 0x10) + ((height - k - 1) * 2)) >> (7 - u) & 0x1) + (mmu->readByte(SPT + (tileID * 0x10) + ((height - k - 1) * 2) + 1) >> (7 - u) & 0x1) * 2;
+                            break;
+                        case 0x60: // both x-flip and y-flip
+                            color_val = (mmu->readByte(SPT + (tileID * 0x10) + ((height - k - 1) * 2)) >> u & 0x1) + (mmu->readByte(SPT + (tileID * 0x10) + ((height - k - 1) * 2) + 1) >> u & 0x1) * 2;
+                            break;
+                        default:
+                            break;
+                        }
+                        // 1. get color value
+                        // 2. get RGB color from palette
+                        // 3. set sprite map A array
                         palette = ((flags >> 4) & 1) ? SPRITE_PALETTE_1 : SPRITE_PALETTE_2;
                         color = (mmu->readByte(palette) >> (2 * color_val)) & 3;
                         // if color_val == 0, then it is transparent
@@ -189,7 +218,7 @@ void GPU::calculateSpriteMap()
     }
 }
 
-/*
+/* TODO: perhaps rewrite some of the fxns into here for readability
 void GPU::drawScanline()
 {
     LCDC = mmu->readByte(LCD_CNTRL_REG);
@@ -253,11 +282,12 @@ void GPU::tick(int cycles)
         if (g_clocksum >= 204)
         {
             g_clocksum = 0;
-            // TODO: inc. LY register
+            incScanLine(); // increment LY register
             if (line == 143)
             {
                 mode = V_BLANK;
                 // TODO: request interrupt
+
                 calculateBG();
                 calculateWindowMap();
                 calculateSpriteMap();
@@ -278,7 +308,7 @@ void GPU::tick(int cycles)
             }
             else
             {
-                // TODO: inc. LY register
+                incScanLine();
                 if (line == 0)
                     mode = OAM_SCAN;
             }
@@ -300,21 +330,24 @@ void GPU::tick(int cycles)
         {
             g_clocksum = 0;
             mode = H_BLANK;
-            // render tiles
             drawFrame();
+            memset(bgMapA, 0, FB_SIZE);
+            memset(spriteMapA, 0, FB_SIZE);
+            memset(winMapA, 0, FB_SIZE);
         }
     }
     break;
     default:
         break;
     }
-    // set a STAT interrupt
-    if (LY == LY_CMP)
+    // set an LCD STAT interrupt
+    LY_CMP = mmu->readByte(LYC);
+    if (line == LY_CMP)
     {
         if ((mmu->readByte(LCD_STAT_REG) >> 6) & 0x01)
             if (((mmu->readByte(LCD_STAT_REG) >> 2) & 0x01) == 0)
             {
-                mmu->writeByte(0xFF0F, mmu->readByte(0xFF0F) | 2);
+                mmu->writeByte(0xFF0F, mmu->readByte(0xFF0F) | 2); // TODO: rewrite
                 mmu->writeByte(LCD_STAT_REG, mmu->readByte(LCD_STAT_REG) | 4);
             }
     }

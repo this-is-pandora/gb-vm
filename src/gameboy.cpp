@@ -16,6 +16,12 @@ GameBoy::~GameBoy()
     delete mmu;
 }
 
+void GameBoy::initGameBoy()
+{
+    mmu->loadBootROM();
+    gpu->initGraphics();
+}
+
 void GameBoy::update()
 {
     const int MAX_CYCLES = 69905;
@@ -31,9 +37,10 @@ void GameBoy::update()
 
 void GameBoy::emulate()
 {
+    // TODO: throttle the emulation
     if (!unpaused)
     {
-        cycles = cpu->tick(); // execute instrctns.
+        cycles = cpu->tick(); // step the CPU
         gpu->tick(cycles);    // step the GPU
         // TODO: handle timers & interrupts out here?
         // TODO: handle window events & controls in VBLANK

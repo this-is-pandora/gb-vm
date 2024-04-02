@@ -48,6 +48,12 @@
  * bit-5: Window enable
  * bit-6: Window tilemap; 0 = 0x9800-0x9BFF; 1 = 0x9C00-0x9FFF
  * bit-7 LCD & PPU enable
+ * Notes for LCD STAT register
+ * it contains the status of the LCD
+ * 00 - horizontal blank
+ * 01 - v blank
+ * 10 - searching for sprites
+ * 11 - accessing vram
  */
 #define LCD_CNTRL_REG 0xFF40
 #define LCD_STAT_REG 0xFF41
@@ -56,7 +62,7 @@
 #define OAM 0xFE00
 #define OAM_END 0xFE9F
 #define SPT 0x8000 // sprite pattern table
-
+// positioning stuff
 #define SCY 0xFF42 // scroll y
 #define SCX 0xFF43 // scroll x
 #define WY 0xFF4A  // window Y position
@@ -81,16 +87,11 @@
 #define WIN_ENABLE 5
 #define WIN_TILEMAP 6
 #define LCD_PPU_ENABLE 7
-// the true resolution is 256 x 256 pixels and each pixel is 3 bytes each
+// the true resolution is 256 x 256 pixels and each pixel is 3 or 4 bytes each
+// in RGB format
 #define FB_SIZE 196608   // f_buffer size: 256 * 256 * 3
 #define FB_SIZE_A 262144 // f_bufferA size: 256 * 256 * 4
 
-// TODO: implement methods for LCD registers
-// TODO: VRAM methods
-// TODO: implement OAM methods
-// TODO: implement BG, Window, & Sprites layer
-//  TODO: implement Tile Data Table
-//  TODO: implement GUI code
 enum PPU_MODES
 {
     H_BLANK,
@@ -110,33 +111,29 @@ enum COLOR_PALETTE
 class GPU
 {
 private:
-    uint8_t screenData[SCREEN_W][SCREEN_H][3];
+    // uint8_t screenData[SCREEN_W][SCREEN_H][3];
     MMU *mmu;
 
     int g_clocksum, line, tileMap, tileID, tileData;
     int scrollX, scrollY, STAT, LY, LY_CMP, LCDC, winX, winY;
-    int row, x_off, y_off, x_offS, y_offS, x_offA, y_offA;
+    int x_off, y_off, x_offS, y_offS, x_offA, y_offA;
     int COLORS[12] = {
         0xFF, 0xFF, 0XFF,  // white = (255, 255, 255)
         0xAA, 0xAA, 0xAA,  // dark gray = (170, 170, 170)
         0x55, 0x55, 0x55,  // light gray = (85, 85, 85)
         0x00, 0x00, 0x00}; // black = (0, 0, 0)
 
-    uint8_t f_buffer[SCREEN_W * SCREEN_H * 3];  // RGB
+    // uint8_t f_buffer[SCREEN_W * SCREEN_H * 3];  // RGB
     uint8_t f_bufferA[SCREEN_W * SCREEN_H * 4]; // RGBA
 
-    uint8_t bgMap[FB_SIZE];
-    uint8_t winMap[FB_SIZE];
-    uint8_t spriteMap[FB_SIZE];
     uint8_t bgMapA[FB_SIZE_A];
     uint8_t winMapA[FB_SIZE_A];
     uint8_t spriteMapA[FB_SIZE_A];
 
     PPU_MODES mode;
-    // GUI items
+
     SDL_Window *window;
     SDL_Renderer *renderer;
-    // SDL_Texture *texture;
     SDL_Texture *textureA;
     SDL_Event event;
 
@@ -146,6 +143,9 @@ private:
     void scanOAM();
     void drawPixels();
 
+    void incScanLine();
+    void changeMode(int id);
+
 public:
     GPU(MMU *memory)
     {
@@ -153,14 +153,11 @@ public:
         line = 0;
         g_clocksum = 0;
         mode = V_BLANK;
-        screenData[160 / 2][144 / 2][0] = 0xFF;
-        screenData[160 / 2][144 / 2][1] = 0;
-        screenData[160 / 2][144 / 2][2] = 0;
     }
     ~GPU();
     void initGraphics();
     bool lcdEnabled();
-    void setPalette();
+    void setPalette(); // TODO: create different color palettes
 
     void setTileMap(int id);
     uint16_t getTileMap(int bit); // 2 32x32 tilemaps to choose from in the VRAM
@@ -168,18 +165,10 @@ public:
     uint8_t read8000(); // 0x8000 addressing mode
     uint8_t read8800(); // 0x8800 addressing mode
 
-    void createBG();        // fill bg map
-    void createWindowMap(); // fill window map
-    void createSpriteMap(); // fill sprite map
-
     void calculateBG();
     void calculateWindowMap();
     void calculateSpriteMap();
 
-    void drawBG();
-    void drawBGTileSet();
-    void drawWindowMap();
-    void drawSpriteMap();
     void drawScanline();
     // draw frame buffer to SDL_texture and then draw the texture w/ renderer
     void drawFrame();      // ~60 frames per second

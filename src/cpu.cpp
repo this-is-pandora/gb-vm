@@ -137,6 +137,7 @@ uint8_t CPU::fetch()
 
 int CPU::execute(uint8_t opcode)
 {
+    bool ext_op = false; // place holder code for now
     switch (opcode)
     {
     case 0x00: // NOP
@@ -719,7 +720,7 @@ int CPU::execute(uint8_t opcode)
         CPU_8BIT_AND(AF.hi, n, false);
     }
     break;
-    case 0xA7: // TODO: fix bug
+    case 0xA7:
         CPU_8BIT_AND(AF.hi, AF.hi, false);
         break;
     case 0xA8:
@@ -857,9 +858,12 @@ int CPU::execute(uint8_t opcode)
             CPU_JP(nn);
     }
     break;
-    case 0xCB: // TODO: prefix CB
+    case 0xCB: // prefix CB
+    {
         executeExtendedOpcode();
-        break;
+        ext_op = true;
+    }
+    break;
     case 0xCC: // TODO: call Z,nn
     {
         uint16_t nn = readWord(pc);
@@ -988,9 +992,10 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xEA: // TODO: LD [addr], A
     {
-        uint16_t nn = readWord(pc + 1);
+        uint16_t nn = readWord(pc);
+        /*
         nn = nn << 8;
-        nn |= readWord(pc);
+        nn |= readWord(pc); */
         pc += 2;
         writeByte(nn, AF.hi);
     }
@@ -1040,6 +1045,7 @@ int CPU::execute(uint8_t opcode)
     case 0xF8: // TODO: LD HL, SP+n
     {
         uint8_t n = readByte(pc);
+        pc++;
         CPU_16BIT_REG_LD(HL.value, sp + n);
     }
     break;
@@ -1076,7 +1082,10 @@ int CPU::execute(uint8_t opcode)
     }
     break;
     }
-    return op_cycles[opcode];
+    if (ext_op)
+        return op_ext_cycles[opcode];
+    else
+        return op_cycles[opcode];
 }
 
 // TODO: finsih & check for semantic errors
@@ -1104,7 +1113,7 @@ int CPU::tick()
             cycles = execute(opcode);
         }
         else
-            cycles = 1;
+            cycles = 4;
         // 3. handle timer
         if (h_timer->clockEnabled())
             h_timer->handleTimers(cycles, h_interrupts);

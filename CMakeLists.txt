@@ -14,9 +14,37 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# link to SDL2
+set(SDL2_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/SDL2/include/SDL2)
+set(SDL2_LIB_DIR ${CMAKE_SOURCE_DIR}/SDL2/lib/)
+include_directories(${SDL2_INCLUDE_DIR})
+link_directories(${SDL2_LIB_DIR})
+
+# testing stuff
 include(CTest)
 include_directories(include)
 add_subdirectory(test)
 
-# add_executable(gbvm ${SOURCES} ${INCLUDE_DIRECTORIES})
+
+
+set(SOURCES
+    ../src/main.cpp
+    ../src/gameboy.cpp
+    ../src/graphics.cpp
+    ../src/opcodes.cpp
+    ../src/cpu.cpp
+    ../src/memory.cpp
+    ../src/interrupts.cpp
+    ../src/timer.cpp
+    ../include/cpu.h
+    ../include/graphics.h
+    ../include/memory.h
+    ../include/interrupts.h
+    ../include/timer.h
+    ../include/gameboy.h
+
+)
+
+add_executable(gbvm ${SOURCES} ${INCLUDE_DIRECTORIES})
+target_link_libraries(gbvm SDL2main SDL2)
 

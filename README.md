@@ -9,10 +9,10 @@ TODO: Most important
 - [x] Ability to load a ROM or .gb file into memory
 - [x] Implement interrupts & interrupt handling
 - [x] Implement CPU clock & other timing elements
-- [ ] Implement functions for graphical calculations & data
-- [ ] Implement a window & functions to render graphics
+- [x] Implement functions for graphical calculations & data
+- [x] Implement a window & functions to render graphics
 - [ ] Keyboard input & key-mapping
-- [ ] Write the emulation code: emulation loop, rendering, etc.
+- [x] Write the emulation code: emulation loop, rendering, etc.
 - [ ] Write unit tests & general testing
 - [ ] Write CMake code to compile program
 
@@ -25,7 +25,7 @@ TODO: Other features & additions (if I have time)
 - [ ] Color
 - [ ] Audio & sound
 - [ ] Save & load game
-- [ ] Exit
+- [x] Exit
 
 Useful resources:
 https://gbdev.io/pandocs/
