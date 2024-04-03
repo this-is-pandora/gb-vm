@@ -1,4 +1,5 @@
 #include "../include/gameboy.h"
+#include <iostream>
 
 GameBoy::GameBoy()
 {
@@ -18,8 +19,10 @@ GameBoy::~GameBoy()
 
 void GameBoy::initGameBoy()
 {
+    // mmu->writeByte(0xFF41, 0x80);
     mmu->loadBootROM();
     gpu->initGraphics();
+    // gpu->testFunc();
 }
 
 void GameBoy::update()

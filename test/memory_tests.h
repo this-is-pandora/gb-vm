@@ -24,6 +24,12 @@ TEST_F(MEM_TEST, WRITE_MEM)
     ASSERT_EQ(value, 100);
 }
 
+TEST_F(MEM_TEST, WRITE_MEM_2)
+{
+    mmu->writeByte(0xFF41, 0x80);
+    uint8_t value = mmu->readByte(0xFF41);
+    ASSERT_EQ(value, 0x80);
+}
 // push & pop
 TEST_F(MEM_TEST, PUSH_POP_STACK)
 {

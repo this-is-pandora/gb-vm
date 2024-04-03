@@ -1,10 +1,11 @@
 #pragma once
 #include <stdint.h>
+#include <memory>
 #include "memory.h"
 #include "interrupts.h"
 #include "timer.h"
-
-using namespace std;
+// #include "gameboy.h"
+class GameBoy;
 // for doing flag calculations
 #define FLAG_MASK_Z 128
 #define FLAG_MASK_N 64
@@ -36,7 +37,7 @@ private:
     Register AF, BC, DE, HL;
     uint16_t sp = 0x0;              // 0xFFFE
     uint16_t pc = 0x0;              // will be 0x0100 after booting sequence
-    MMU *memory;                    // memory management unit
+    MMU *mmu;                       // memory management unit
     InterruptHandler *h_interrupts; // interrupt handler
     Timer *h_timer;                 // timer handler
 

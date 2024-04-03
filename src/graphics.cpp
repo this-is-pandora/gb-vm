@@ -1,4 +1,13 @@
 #include "../include/graphics.h"
+#include <iostream>
+
+GPU::GPU(MMU *mmu) : mmu(mmu)
+{
+    // mmu = mmu;
+    line = 0;
+    g_clocksum = 0;
+    mode = V_BLANK;
+}
 
 GPU::~GPU()
 {
@@ -9,18 +18,19 @@ GPU::~GPU()
 
 void GPU::initGraphics()
 {
+    std::cout << "initializing graphics.." << std::endl;
     SDL_Init(SDL_INIT_VIDEO);
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
     SDL_CreateWindowAndRenderer(SCREEN_W, SCREEN_H, 0, &window, &renderer);
     SDL_SetWindowSize(window, 480, 432);
     SDL_RenderSetLogicalSize(renderer, SCREEN_W, SCREEN_H);
     SDL_SetWindowResizable(window, SDL_TRUE);
-
+    std::cout << "creating textures.." << std::endl;
     /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24,
                                 SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H); */
     textureA = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
                                  SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
-
+    std::cout << "setting buffers and variables.." << std::endl;
     /* memset(bgMap, 0x0, FB_SIZE);
      memset(spriteMap, 0x69, FB_SIZE);
      memset(winMap, 0x0, FB_SIZE);*/
@@ -30,8 +40,17 @@ void GPU::initGraphics()
 
     scrollX = 0;
     scrollY = 0;
-
+    std::cout << "setting LCD STAT.." << std::endl;
     mmu->writeByte(LCD_STAT_REG, 0x80);
+    std::cout << "finished initializing graphics.." << std::endl;
+}
+
+void GPU::testFunc()
+{
+    // mmu->writeByte(0xFF41, 0x80);
+    std::cout << "inside testFunc.." << std::endl;
+    uint8_t val = mmu->readByte(0x0);
+    std::cout << val << std::endl;
 }
 
 uint16_t GPU::getTileMap(int bit)

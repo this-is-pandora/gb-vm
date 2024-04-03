@@ -46,5 +46,5 @@ set(SOURCES
 )
 
 add_executable(gbvm ${SOURCES} ${INCLUDE_DIRECTORIES})
-target_link_libraries(gbvm SDL2main SDL2)
+target_link_libraries(gbvm mingw32 SDL2main SDL2)
 

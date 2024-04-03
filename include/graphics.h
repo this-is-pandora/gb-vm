@@ -1,8 +1,9 @@
 #pragma once
 #include <stdint.h>
+#include <memory>
 #include "memory.h"
 #include "../SDL2/include/SDL2/SDL.h"
-
+// #include "gameboy.h"
 /* General notes:
  * the true resolution is actually 256x256 (or 32x32 tiles).
  * Of that 256x256, only 160x144 is what's actually seen by the player on screen
@@ -112,8 +113,8 @@ class GPU
 {
 private:
     // uint8_t screenData[SCREEN_W][SCREEN_H][3];
+    // std::shared_ptr<MMU> mmu;
     MMU *mmu;
-
     int g_clocksum, line, tileMap, tileID, tileData;
     int scrollX, scrollY, STAT, LY, LY_CMP, LCDC, winX, winY;
     int x_off, y_off, x_offS, y_offS, x_offA, y_offA;
@@ -135,7 +136,7 @@ private:
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *textureA;
-    SDL_Event event;
+    // SDL_Event event;
 
     // PPU mode handlers
     void handle_HBlank();
@@ -147,18 +148,20 @@ private:
     void changeMode(int id);
 
 public:
-    GPU(MMU *memory)
-    {
-        memory = memory;
-        line = 0;
-        g_clocksum = 0;
-        mode = V_BLANK;
-    }
+    /*
+        GPU(shared_ptr<MMU> mmu)
+        {
+            mmu = mmu;
+            line = 0;
+            g_clocksum = 0;
+            mode = V_BLANK;
+        }*/
+    GPU(MMU *mmu);
     ~GPU();
     void initGraphics();
     bool lcdEnabled();
     void setPalette(); // TODO: create different color palettes
-
+    void testFunc();
     void setTileMap(int id);
     uint16_t getTileMap(int bit); // 2 32x32 tilemaps to choose from in the VRAM
     uint16_t getTileData(int bit);

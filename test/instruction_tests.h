@@ -7,11 +7,11 @@ class INSTRCTN_TEST : public testing::Test
 protected:
       void SetUp() override
       {
-            mmu = new MMU();
-            cpu = new CPU(mmu);
+            // mmu = new MMU();
+            // cpu = new CPU(mmu);
       }
-      MMU *mmu;
-      CPU *cpu;
+      // MMU *mmu;
+      // CPU *cpu;
 };
 
 /* Tests individual instructions, e.g. LD, ADD, etc. */

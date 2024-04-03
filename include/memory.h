@@ -47,8 +47,8 @@ public:
     // for interrupt enabling/disabling
     void enableInterrupts(bool value);
     bool interruptsEnabled();
-    void memory_dump();
-    // read & write
+    // void memory_dump();
+    //  read & write
     void writeByte(uint16_t addr, uint8_t value);
     void writeWord(uint16_t addr, uint16_t value);
     uint8_t readByte(uint16_t addr);

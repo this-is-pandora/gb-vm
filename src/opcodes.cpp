@@ -113,25 +113,25 @@ void CPU::CPU_REG_LD(uint8_t &reg, uint8_t load)
 // memory to register
 void CPU::CPU_REG_ROM_LD(uint8_t &reg, uint16_t addr)
 {
-    reg = memory->readByte(addr);
+    reg = mmu->readByte(addr);
 }
 
 // register to memory
 void CPU::CPU_ROM_REG_LD(uint16_t addr, uint8_t reg)
 {
-    memory->writeByte(addr, reg);
+    mmu->writeByte(addr, reg);
 }
 // immediate to memory
 void CPU::CPU_8BIT_LD(uint8_t &reg)
 {
-    uint8_t value = memory->readByte(pc);
+    uint8_t value = mmu->readByte(pc);
     pc++;
     reg = value;
 }
 
 void CPU::CPU_16BIT_LD(uint16_t &reg)
 {
-    uint16_t val = memory->readWord(pc);
+    uint16_t val = mmu->readWord(pc);
     pc++;
     reg = val;
 }
@@ -299,7 +299,7 @@ void CPU::CPU_8BIT_AND(uint8_t &reg, uint8_t operand, bool useImmediate)
 {
     // reg = (reg & operand);
     if (useImmediate)
-        operand = memory->readByte(pc++);
+        operand = mmu->readByte(pc++);
     reg &= operand;
     AF.lo = 0;
     // 0-flag
@@ -313,7 +313,7 @@ void CPU::CPU_8BIT_OR(uint8_t &reg, uint8_t operand, bool useImmediate)
 {
     // reg = (reg | operand);
     if (useImmediate)
-        operand = memory->readByte(pc++);
+        operand = mmu->readByte(pc++);
     reg |= operand;
     AF.lo = 0;
     if (reg == 0)
@@ -323,7 +323,7 @@ void CPU::CPU_8BIT_OR(uint8_t &reg, uint8_t operand, bool useImmediate)
 void CPU::CPU_8BIT_XOR(uint8_t &reg, uint8_t operand, bool useImmediate)
 {
     if (useImmediate)
-        operand = memory->readByte(pc++);
+        operand = mmu->readByte(pc++);
     reg ^= operand;
     AF.lo = 0;
     if (reg == 0)
@@ -333,12 +333,12 @@ void CPU::CPU_8BIT_XOR(uint8_t &reg, uint8_t operand, bool useImmediate)
 // stack operations
 void CPU::CPU_PUSH(Register reg)
 {
-    memory->push(reg.value, sp);
+    mmu->push(reg.value, sp);
 }
 
 void CPU::CPU_POP(Register &reg)
 {
-    reg.value = memory->pop(sp);
+    reg.value = mmu->pop(sp);
 }
 
 // rotates & shifts
@@ -419,7 +419,7 @@ void CPU::CPU_SRL(uint8_t &reg)
 // shifts & rotate into memory
 void CPU::CPU_RR_MEM(uint16_t addr)
 {
-    uint8_t n = memory->readByte(addr);
+    uint8_t n = mmu->readByte(addr);
     int oldcarry = getCarryFlag();
     AF.lo = 0;
     if (n & 0x01)
@@ -427,12 +427,12 @@ void CPU::CPU_RR_MEM(uint16_t addr)
     n = (n >> 1) | (7 << oldcarry);
     if (n == 0)
         setZeroFlag(true);
-    memory->writeByte(addr, n);
+    mmu->writeByte(addr, n);
 }
 
 void CPU::CPU_RL_MEM(uint16_t addr)
 {
-    uint8_t n = memory->readByte(addr);
+    uint8_t n = mmu->readByte(addr);
     int oldcarry = getCarryFlag();
     AF.lo = 0;
     if ((n >> 7) & 0x01)
@@ -440,12 +440,12 @@ void CPU::CPU_RL_MEM(uint16_t addr)
     n = (n << 1) | oldcarry;
     if (n == 0)
         setZeroFlag(true);
-    memory->writeByte(addr, n);
+    mmu->writeByte(addr, n);
 }
 
 void CPU::CPU_SRA_MEM(uint16_t addr)
 {
-    uint8_t n = memory->readByte(addr);
+    uint8_t n = mmu->readByte(addr);
     int msb = (n >> 7) & 0x01;
     AF.lo = 0;
     if (n & 0x01)
@@ -453,12 +453,12 @@ void CPU::CPU_SRA_MEM(uint16_t addr)
     n = (n >> 1) | (msb << 7);
     if (n == 0)
         setZeroFlag(true);
-    memory->writeByte(addr, n);
+    mmu->writeByte(addr, n);
 }
 
 void CPU::CPU_SLA_MEM(uint16_t addr)
 {
-    uint8_t n = memory->readByte(addr);
+    uint8_t n = mmu->readByte(addr);
     /*
     AF.lo = 0;
     if ((n >> 7) & 0x01)
@@ -467,7 +467,7 @@ void CPU::CPU_SLA_MEM(uint16_t addr)
     if (n == 0)
         setZeroFlag(true);*/
     CPU_SLA(n);
-    memory->writeByte(addr, n);
+    mmu->writeByte(addr, n);
 }
 
 void CPU::CPU_SRL_MEM(uint16_t addr)
@@ -542,19 +542,19 @@ void CPU::CPU_JR(int8_t n)
 void CPU::CPU_CALL(uint16_t nn)
 {
     pc += 2;
-    memory->push(pc, sp);
+    mmu->push(pc, sp);
     pc = nn;
 }
 // restarts & returns
 void CPU::CPU_RST(uint8_t n)
 {
-    memory->push(pc, sp); // 32
+    mmu->push(pc, sp); // 32
     pc = n;
 }
 
 void CPU::CPU_RET()
 {
-    pc = memory->pop(sp);
+    pc = mmu->pop(sp);
 }
 
 void CPU::CPU_RETI()

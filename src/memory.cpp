@@ -1,5 +1,6 @@
 #include "../include/memory.h"
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 // total RAM size: 0xFFFF
@@ -16,7 +17,8 @@ MMU::MMU()
     ram_bank_no = 0;
     enable_ram = false;
     memset(&m_ram_banks, 0, sizeof(m_ram_banks));
-
+    memset(&memory, 0, sizeof(memory));
+    memory[0x0] = 0x21; // for testing purposes
     memory[0xFF05] = 0x00;
     memory[0xFF06] = 0x00;
     memory[0xFF05] = 0x00;
@@ -67,19 +69,21 @@ void MMU::loadROM(char *rom, size_t size)
 }
 void MMU::loadBootROM()
 {
-    loadROM("/bin/dmg_boot.bin", 0x100);
+    std::cout << "loading boot ROM.." << endl;
+    loadROM("../bin/dmg_boot.bin", 0x100);
 }
 
 void MMU::unloadBootROM()
 {
     // if the BANK register (0xFF50) is set to 1
     // unmap the boot rom
+    /*
     if (memory[0xFF50] == 1)
     {
         for (int i = 0; i < 256; i++)
         {
         }
-    }
+    }*/
 }
 
 // MBC1 has 125 banks
@@ -279,10 +283,12 @@ void MMU::writeByte(uint16_t addr, uint8_t value)
     if (addr < 0x8000)
     {
         // don't write anything to read-only memory
+        cout << "in read-only memory.." << endl;
         handleBanking(addr, value);
     }
     else if (addr >= 0xA000 && addr < 0xC000)
     {
+        cout << "enable ram" << endl;
         if (enable_ram)
         {
             uint16_t n_addr = addr - 0xA000;
@@ -293,30 +299,37 @@ void MMU::writeByte(uint16_t addr, uint8_t value)
     {
         // writing to ECHO RAM will also write to RAM
         // RAM written to: 0xC000 - 0xDE00
+        cout << "echo RAM" << endl;
         memory[addr] = value;
         writeByte(addr - 0x2000, value);
     }
     else if (addr >= 0xFEA0 && addr < 0xFEFF)
     {
+        cout << "restricted area" << endl;
         // restricted area
     }
     else if (addr == 0xFF50)
     {
         // unload boot rom
+        cout << "unloading boot rom" << endl;
         unloadBootROM();
     }
     // divider register
     else if ((addr == 0xFF04) || (addr == 0xFF44))
     {
+        cout << "divider reg" << endl;
         memory[addr] = 0;
     }
     else if (addr == 0xFF46)
     {
+        cout << "direct memory access" << endl;
         DMATransfer(value);
     }
     else
     {
+        cout << "writing to memory.." << endl;
         memory[addr] = value;
+        cout << "finished writing to memory.." << endl;
     }
 }
 

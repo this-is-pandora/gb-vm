@@ -16,10 +16,16 @@ CPU::CPU(MMU *mmu)
     cpuStopped = false;
     cpuHalted = false;
     debugMode = false;
+    mmu = mmu;
+    // gb = gb_;
+    //  h_interrupts = new InterruptHandler(mmu);
+    //  h_timer = new Timer(mmu);
+}
 
-    memory = mmu;
-    h_interrupts = new InterruptHandler(memory);
-    h_timer = new Timer(memory);
+CPU::~CPU()
+{
+    delete h_timer;
+    delete h_interrupts;
 }
 /* output current CPU register values*/
 void CPU::status()
@@ -42,23 +48,27 @@ void CPU::status()
 
 void CPU::writeByte(uint16_t addr, uint8_t data)
 {
-    memory->writeByte(addr, data);
+    // mmu->writeByte(addr, data);
+    mmu->writeByte(addr, data);
 }
 
 void CPU::writeWord(uint16_t addr, uint16_t data)
 {
-    memory->writeWord(addr, data);
+    // mmu->writeWord(addr, data);
+    mmu->writeWord(addr, data);
 }
 
 uint8_t CPU::readByte(uint16_t addr)
 {
-    uint8_t data = memory->readByte(addr);
+    // uint8_t data = mmu->readByte(addr);
+    uint8_t data = mmu->readByte(addr);
     return data;
 }
 
 uint16_t CPU::readWord(uint16_t addr)
 {
-    uint16_t data = memory->readWord(addr);
+    // uint16_t data = mmu->readWord(addr);
+    uint16_t data = mmu->readWord(addr);
     return data;
 }
 
@@ -130,7 +140,8 @@ void CPU::setHalfCarryFlag(bool val)
 
 uint8_t CPU::fetch()
 {
-    uint8_t data = memory->readByte(pc++);
+    // uint8_t data = mmu->readByte(pc++);
+    uint8_t data = mmu->readByte(pc++);
     return data;
     // return m_ROM[pc++];
 }
@@ -815,20 +826,21 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xC2: // TODO: JP NZ,nn
     {
-        uint16_t nn = memory->readWord(pc);
+        // uint16_t nn = mmu->readWord(pc);
+        uint16_t nn = mmu->readWord(pc);
         if (getZeroFlag() == 0)
             CPU_JP(nn);
     }
     break;
     case 0xC3: // TODO
     {
-        uint16_t nn = memory->readWord(pc);
+        uint16_t nn = mmu->readWord(pc);
         CPU_JP(nn);
     }
     break;
     case 0xC4: // TODO: call NZ,nn
     {
-        uint16_t nn = memory->readWord(pc);
+        uint16_t nn = mmu->readWord(pc);
         if (getZeroFlag() == 0)
             CPU_CALL(nn);
     }
@@ -853,7 +865,7 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xCA: // TODO: JP Z,nn
     {
-        uint16_t nn = memory->readWord(pc);
+        uint16_t nn = mmu->readWord(pc);
         if (getZeroFlag() == 1)
             CPU_JP(nn);
     }
@@ -873,7 +885,7 @@ int CPU::execute(uint8_t opcode)
     break;
     case 0xCD: // TODO: CALL nn
     {
-        uint16_t nn = memory->readWord(pc);
+        uint16_t nn = mmu->readWord(pc);
         CPU_CALL(nn);
     }
     break;
@@ -1099,12 +1111,12 @@ int CPU::tick()
             // if EI/DI is called, it will enable/disable interrupts after the next instruction
             if (pendingEnable)
             { // TODO: rework this code
-                memory->enableInterrupts(true);
+                mmu->enableInterrupts(true);
                 pendingEnable = false;
             }
             else if (pendingDisable)
             {
-                memory->enableInterrupts(false);
+                mmu->enableInterrupts(false);
                 pendingDisable = false;
             }
             // 1. fetch instruction
@@ -1118,7 +1130,7 @@ int CPU::tick()
         if (h_timer->clockEnabled())
             h_timer->handleTimers(cycles, h_interrupts);
         // 4. handle interrupts
-        if (memory->interruptsEnabled())
+        if (mmu->interruptsEnabled())
             h_interrupts->handleInterrupts(pc, sp);
         // 5. if (exit) break;
     }

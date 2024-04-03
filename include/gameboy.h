@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <memory>
 #include "cpu.h"
 #include "memory.h"
 #include "graphics.h"
@@ -25,9 +26,11 @@
 class GameBoy
 {
 private:
+    // MMU *mmu;
     MMU *mmu;
     CPU *cpu;
     GPU *gpu; // aka the ppu or "pixel processing unit"
+
     int cycles;
     bool unpaused;
 
