@@ -4,8 +4,7 @@
 #include "memory.h"
 #include "interrupts.h"
 #include "timer.h"
-// #include "gameboy.h"
-class GameBoy;
+
 // for doing flag calculations
 #define FLAG_MASK_Z 128
 #define FLAG_MASK_N 64
@@ -35,9 +34,10 @@ class CPU
 {
 private:
     Register AF, BC, DE, HL;
-    uint16_t sp = 0x0;              // 0xFFFE
-    uint16_t pc = 0x0;              // will be 0x0100 after booting sequence
-    MMU *mmu;                       // memory management unit
+    uint16_t sp; // 0xFFFE
+    uint16_t pc; // will be 0x0100 after booting sequence
+    // MMU *mmu;                       // memory management unit
+    std::shared_ptr<MMU> mmu;
     InterruptHandler *h_interrupts; // interrupt handler
     Timer *h_timer;                 // timer handler
 
@@ -82,7 +82,7 @@ private:
     bool accessedMemory;
     bool cpuStopped;
     bool cpuHalted;
-    bool pendingEnable, pendingDisable = false;
+    bool pendingEnable, pendingDisable;
     bool debugMode;
     // TODO: move these instructions into an InstructionSet class maybe
     //  CPU control methods
@@ -163,10 +163,14 @@ private:
     void executeExtendedOpcode(); // if opcode starts w/ 0xCB
 
 public:
-    CPU(MMU *mmu);
+    // CPU(MMU *mmu);
+    CPU(std::shared_ptr<MMU> mmu);
     ~CPU();
 
     void status();
+    uint16_t getPC();
+    uint16_t getSP();
+    uint16_t getOP();
     // flag methods
     bool getZeroFlag() const;
     void setZeroFlag(bool val);

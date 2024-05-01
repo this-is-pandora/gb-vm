@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <memory>
 #include "memory.h"
 #include "interrupts.h"
 
@@ -35,10 +36,12 @@ private:
     // 4194304/4096 = 1024
     int t_clocksum = CLOCKSPEED / frequency; // TODO fix
     int div_clocksum = 0;
-    MMU *memory;
+    // MMU *memory;
+    std::shared_ptr<MMU> memory;
 
 public:
-    Timer(MMU *memory = NULL);
+    // Timer(MMU *memory = NULL);
+    Timer(std::shared_ptr<MMU> memory);
     void handleTimers(int cycles, InterruptHandler *interruptHandler);
     void handleDivider(int cycles);
     bool clockEnabled();

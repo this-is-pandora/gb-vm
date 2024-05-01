@@ -113,11 +113,13 @@ class GPU
 {
 private:
     // uint8_t screenData[SCREEN_W][SCREEN_H][3];
-    // std::shared_ptr<MMU> mmu;
-    MMU *mmu;
+    std::shared_ptr<MMU> mmu;
+    // MMU *mmu;
+
     int g_clocksum, line, tileMap, tileID, tileData;
     int scrollX, scrollY, STAT, LY, LY_CMP, LCDC, winX, winY;
     int x_off, y_off, x_offS, y_offS, x_offA, y_offA;
+
     int COLORS[12] = {
         0xFF, 0xFF, 0XFF,  // white = (255, 255, 255)
         0xAA, 0xAA, 0xAA,  // dark gray = (170, 170, 170)
@@ -130,6 +132,8 @@ private:
     uint8_t bgMapA[FB_SIZE_A];
     uint8_t winMapA[FB_SIZE_A];
     uint8_t spriteMapA[FB_SIZE_A];
+    // flags if the line has been calculated and the frame has been drawn already
+    bool lineFlag, frameFlag;
 
     PPU_MODES mode;
 
@@ -145,7 +149,7 @@ private:
     void drawPixels();
 
     void incScanLine();
-    void changeMode(int id);
+    void changeMode(PPU_MODES mode);
 
 public:
     /*
@@ -156,7 +160,7 @@ public:
             g_clocksum = 0;
             mode = V_BLANK;
         }*/
-    GPU(MMU *mmu);
+    GPU(std::shared_ptr<MMU> mmu);
     ~GPU();
     void initGraphics();
     bool lcdEnabled();

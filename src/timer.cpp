@@ -1,8 +1,8 @@
 #include "../include/timer.h"
 
-Timer::Timer(MMU *memory)
+Timer::Timer(std::shared_ptr<MMU> memory) : memory(memory)
 {
-    memory = memory;
+    // memory = memory;
 }
 
 void Timer::handleTimers(int cycles, InterruptHandler *interruptHandler)

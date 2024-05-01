@@ -3,10 +3,12 @@
 #include <memory>
 #include "cpu.h"
 #include "memory.h"
+#include "interrupts.h"
+#include "timer.h"
 #include "graphics.h"
 
 #define FPS 60
-
+#define MAX_CYCLES 669905
 /*
  * GameBoy has 8 8-bit registers (A,B,C,...,H,L)
  * and 2 16-bit registers (SP, PC)
@@ -26,18 +28,19 @@
 class GameBoy
 {
 private:
-    // MMU *mmu;
-    MMU *mmu;
+    std::shared_ptr<MMU> mmu;
     CPU *cpu;
     GPU *gpu; // aka the ppu or "pixel processing unit"
-
-    int cycles;
-    bool unpaused;
+    InterruptHandler *h_interrupt;
+    Timer *h_timer;
+    int cycles, total_cycles;
 
 public:
+    bool unpaused;
     GameBoy();
     ~GameBoy();
-    void initGameBoy();
+    void loadMemory(char *rom);
+    void initialize();
     // void handleInput();
     // void reset();
     void update();

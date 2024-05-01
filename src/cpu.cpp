@@ -1,7 +1,7 @@
 #include "../include/cpu.h"
 #include <iostream>
 
-CPU::CPU(MMU *mmu)
+CPU::CPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
 {
     // boot rom
     AF.value = 0x01B0;
@@ -16,7 +16,10 @@ CPU::CPU(MMU *mmu)
     cpuStopped = false;
     cpuHalted = false;
     debugMode = false;
-    mmu = mmu;
+    pc = 0x0;
+    sp = 0x0;
+    pendingDisable = false;
+    pendingEnable = false;
     // gb = gb_;
     //  h_interrupts = new InterruptHandler(mmu);
     //  h_timer = new Timer(mmu);
@@ -44,6 +47,20 @@ void CPU::status()
     printf("h_flag = %u\n", getHalfCarryFlag());
     printf("n_flag = %u\n", getSubtractFlag());
     printf("z_flag = %u\n", getZeroFlag());
+}
+uint16_t CPU::getPC()
+{
+    return pc;
+}
+
+uint16_t CPU::getSP()
+{
+    return sp;
+}
+
+uint16_t CPU::getOP()
+{
+    return mmu->readByte(pc);
 }
 
 void CPU::writeByte(uint16_t addr, uint8_t data)
@@ -140,14 +157,14 @@ void CPU::setHalfCarryFlag(bool val)
 
 uint8_t CPU::fetch()
 {
-    // uint8_t data = mmu->readByte(pc++);
     uint8_t data = mmu->readByte(pc++);
     return data;
     // return m_ROM[pc++];
 }
-
+// TODO: instructions to test: 0x20, 0x90, 0xF0, 0xFE
 int CPU::execute(uint8_t opcode)
 {
+    // printf("OpCode: %.2X\n", opcode);
     bool ext_op = false; // place holder code for now
     switch (opcode)
     {
@@ -187,7 +204,7 @@ int CPU::execute(uint8_t opcode)
         uint16_t nn = readWord(pc);
         pc += 2;
         writeByte(nn++, sp);
-        writeByte(nn, sp);
+        writeByte(nn, sp); // TODO: change this to writeWord?
     }
     break;
     case 0x09:
@@ -262,9 +279,9 @@ int CPU::execute(uint8_t opcode)
     case 0x1F:
         CPU_RR(AF.hi);
         break;
-    case 0x20: // TODO: JR NZ, *
+    case 0x20: // TODO: check JR NZ, *
     {
-        int8_t n = (int8_t)readByte(pc);
+        int8_t n = (int8_t)readByte(pc); // TODO check
         if (getZeroFlag() == false)
             CPU_JR(n);
         else
@@ -328,7 +345,7 @@ int CPU::execute(uint8_t opcode)
     case 0x2F:
         CPU_CPL();
         break;
-    case 0x30: // TODO: JR NC,*
+    case 0x30: // TODO: check JR NC,*
     {
         int8_t n = (int8_t)readByte(pc);
         if (getCarryFlag() == false)
@@ -340,7 +357,7 @@ int CPU::execute(uint8_t opcode)
     case 0x31:
         CPU_16BIT_LD(sp);
         break;
-    case 0x32: // LD (HLD),A
+    case 0x32: // LD (HL-),A
     {
         CPU_ROM_REG_LD(HL.value, AF.hi);
         CPU_16BIT_DEC(HL.value);
@@ -1026,7 +1043,7 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xF0:
     {
-        uint8_t n = readByte(pc);
+        uint8_t n = readByte(pc); // TODO: check
         pc++;
         CPU_REG_ROM_LD(AF.hi, (0xFF00 + n));
     }
@@ -1075,9 +1092,14 @@ int CPU::execute(uint8_t opcode)
     case 0xFB: // EI / Enable Interrupt
         CPU_EI();
         break;
-    case 0xFE: // TODO: CP A, n
+    case 0xFE:
     {
-        uint8_t n = readByte(pc);
+        /*
+         * In the bootrom, our CPU runs instruction 0x34
+         * after running 0xFE. 0x34 is supposed to be the arg to 0xFE
+         * The instruction afterwards is JR NZ, ADDR
+         */
+        uint8_t n = readByte(pc++); // TODO check
         CPU_8BIT_CP(AF.hi, n);
     }
     break;
@@ -1104,6 +1126,7 @@ int CPU::execute(uint8_t opcode)
 int CPU::tick()
 {
     int cycles = 0;
+    /*
     while (!cpuStopped)
     {
         if (!cpuHalted)
@@ -1119,8 +1142,10 @@ int CPU::tick()
                 mmu->enableInterrupts(false);
                 pendingDisable = false;
             }
+            std::cout << "fetching opcode.." << std::endl;
             // 1. fetch instruction
             uint8_t opcode = fetch();
+            std::cout << "decoding & executing.." << std::endl;
             // 2. decode & execute
             cycles = execute(opcode);
         }
@@ -1133,14 +1158,32 @@ int CPU::tick()
         if (mmu->interruptsEnabled())
             h_interrupts->handleInterrupts(pc, sp);
         // 5. if (exit) break;
+    }*/
+    if (!cpuHalted)
+    {
+        if (pendingEnable)
+        { // TODO: rework this code
+            mmu->enableInterrupts(true);
+            pendingEnable = false;
+        }
+        else if (pendingDisable)
+        {
+            mmu->enableInterrupts(false);
+            pendingDisable = false;
+        }
+        uint8_t opcode = fetch();
+        cycles = execute(opcode);
     }
+    else
+        cycles = 4;
     return cycles;
 }
-// TODO: impl. clock cycles for these instructions
+
 void CPU::executeExtendedOpcode()
 {
-    uint8_t op = readByte(pc + 1); // TODO: Test for correctness
-    pc += 2;
+    uint8_t op = readByte(pc++); // TODO: Test for correctness
+    // printf("ExtOpcode: %.2X\n", op);
+    //  pc += 2;
     switch (op)
     {
     // RLC n
@@ -1842,7 +1885,7 @@ void CPU::executeExtendedOpcode()
     case 0x8F:
         CPU_RES(AF.hi, 1);
         break;
-    case 0x90:
+    case 0x90: // TODO: check
         CPU_RES(BC.hi, 2);
         break;
     case 0x91:

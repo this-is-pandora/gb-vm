@@ -131,8 +131,8 @@ void CPU::CPU_8BIT_LD(uint8_t &reg)
 
 void CPU::CPU_16BIT_LD(uint16_t &reg)
 {
-    uint16_t val = mmu->readWord(pc);
-    pc++;
+    uint16_t val = mmu->readWord(pc); // TODO: check
+    pc += 2;
     reg = val;
 }
 
@@ -152,9 +152,6 @@ void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCar
         if (getCarryFlag())
             add += 1;
     AF.lo = 0;
-    // zero flag
-    if (reg == 0)
-        setZeroFlag(true);
     // subtract flag = 0
     // half carry
     uint16_t test = (reg & 0xF); // get the lower half nibble of reg
@@ -165,6 +162,9 @@ void CPU::CPU_8BIT_ADD(uint8_t &reg, uint8_t add, bool useImmediate, bool addCar
     if ((reg + add) > 0xFF)
         setCarryFlag(true);
     reg += add;
+    // zero flag
+    if (reg == 0)
+        setZeroFlag(true);
 }
 
 void CPU::CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, bool useImmediate, bool subCarry)
@@ -195,26 +195,39 @@ void CPU::CPU_8BIT_SUB(uint8_t &reg, uint8_t sub, bool useImmediate, bool subCar
 
 void CPU::CPU_8BIT_INC(uint8_t &reg)
 {
-    AF.lo = 0;
-    // zero flag
+    // AF.lo = 0;
+    //  zero flag
     if ((reg + 1) == 0)
         setZeroFlag(true);
+    else
+        setZeroFlag(false);
     // subtract flag
     setSubtractFlag(false);
     // half carry flag
-    if ((reg & 0xF) >= 0xF)
+    if ((reg & 0xF) == 0xF)
         setHalfCarryFlag(true);
-    reg++;
+    else
+        setHalfCarryFlag(false);
+    reg += 1;
 }
 
 void CPU::CPU_8BIT_DEC(uint8_t &reg)
 {
-    AF.lo = 0;
+    // AF.lo = 0;
     uint8_t val = reg - 1;
     setSubtractFlag(true);
+    // z-flag
     if (val == 0)
         setZeroFlag(true);
-    reg--;
+    else
+        setZeroFlag(false);
+
+    // half-carry flag
+    if ((reg & 0x0F) == 0)
+        setHalfCarryFlag(true);
+    else
+        setHalfCarryFlag(false);
+    reg -= 1;
 }
 
 void CPU::CPU_8BIT_ADC(uint8_t reg)
@@ -248,13 +261,20 @@ void CPU::CPU_8BIT_CP(uint8_t reg, uint8_t cp)
 // 16-bit arithmetic
 void CPU::CPU_16BIT_ADD(uint16_t &reg, uint16_t add)
 {
-    AF.lo = 0;
+    // AF.lo = 0;
     uint16_t before = reg;
     reg += add;
+    setSubtractFlag(false);
+    // carry flag
     if ((before + add) > 0xFFFF)
         setCarryFlag(true);
+    else
+        setCarryFlag(false);
+    // half carry falg
     if (((before & 0xFF00) & 0xF) + ((add >> 8) & 0xF))
         setHalfCarryFlag(true);
+    else
+        setHalfCarryFlag(false);
 }
 
 void CPU::CPU_16BIT_SUB(uint16_t &reg, uint16_t sub)
@@ -280,10 +300,13 @@ void CPU::CPU_16BIT_INC(uint16_t &reg)
 
 void CPU::CPU_16BIT_DEC(uint16_t &reg)
 {
-    AF.lo = 0;
-    // 0 flag
-    if (reg == 0)
+    // AF.lo = 0;
+    //  0 flag
+    /*
+    if ((reg - 1) == 0)
         setZeroFlag(true);
+    else
+        setZeroFlag(false);
     // subtract flag
     setSubtractFlag(true);
     // half-carry flag
@@ -291,6 +314,8 @@ void CPU::CPU_16BIT_DEC(uint16_t &reg)
     test -= (1 & 0xF);
     if (test < 0)
         setHalfCarryFlag(true);
+    else
+        setHalfCarryFlag(false); */
     reg--;
 }
 
@@ -501,9 +526,12 @@ void CPU::CPU_RRC_MEM(uint16_t addr)
 // bit operations
 void CPU::CPU_BIT(uint8_t n, uint8_t r)
 {
-    AF.lo = 0;
+    // AF.lo = 0;
     if (~(n >> r) & 0x1)
         setZeroFlag(true);
+    else
+        setZeroFlag(false);
+    setSubtractFlag(false);
     setHalfCarryFlag(true);
 }
 

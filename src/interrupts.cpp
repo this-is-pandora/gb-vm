@@ -1,8 +1,8 @@
 #include "../include/interrupts.h"
 
-InterruptHandler::InterruptHandler(MMU *mmu)
+InterruptHandler::InterruptHandler(std::shared_ptr<MMU> mmu) : mmu(mmu)
 {
-    mmu = mmu;
+    // mmu = mmu;
 }
 
 bool InterruptHandler::readInterrupt(Interrupts i)

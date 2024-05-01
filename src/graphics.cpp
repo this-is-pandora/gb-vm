@@ -1,12 +1,14 @@
 #include "../include/graphics.h"
 #include <iostream>
 
-GPU::GPU(MMU *mmu) : mmu(mmu)
+GPU::GPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
 {
     // mmu = mmu;
     line = 0;
     g_clocksum = 0;
-    mode = V_BLANK;
+    mode = OAM_SCAN;
+    lineFlag = false;
+    frameFlag = false;
 }
 
 GPU::~GPU()
@@ -18,19 +20,16 @@ GPU::~GPU()
 
 void GPU::initGraphics()
 {
-    std::cout << "initializing graphics.." << std::endl;
     SDL_Init(SDL_INIT_VIDEO);
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, "1");
     SDL_CreateWindowAndRenderer(SCREEN_W, SCREEN_H, 0, &window, &renderer);
     SDL_SetWindowSize(window, 480, 432);
     SDL_RenderSetLogicalSize(renderer, SCREEN_W, SCREEN_H);
     SDL_SetWindowResizable(window, SDL_TRUE);
-    std::cout << "creating textures.." << std::endl;
     /* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB24,
                                 SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H); */
     textureA = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32,
                                  SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
-    std::cout << "setting buffers and variables.." << std::endl;
     /* memset(bgMap, 0x0, FB_SIZE);
      memset(spriteMap, 0x69, FB_SIZE);
      memset(winMap, 0x0, FB_SIZE);*/
@@ -40,9 +39,7 @@ void GPU::initGraphics()
 
     scrollX = 0;
     scrollY = 0;
-    std::cout << "setting LCD STAT.." << std::endl;
     mmu->writeByte(LCD_STAT_REG, 0x80);
-    std::cout << "finished initializing graphics.." << std::endl;
 }
 
 void GPU::testFunc()
@@ -77,8 +74,10 @@ uint8_t GPU::read8800()
 
 void GPU::incScanLine()
 {
-    line++;
-    mmu->writeByte(CURRENT_SCANLINE, line);
+    // line++;
+    // mmu->writeByte(CURRENT_SCANLINE, line);
+    mmu->incAddr(CURRENT_SCANLINE); // increment LY register
+    line = mmu->readByte(CURRENT_SCANLINE);
     if (line > 153)
     {
         line = 0;
@@ -291,6 +290,40 @@ void GPU::drawFrame()
     SDL_RenderPresent(renderer);
 }
 
+void GPU::changeMode(PPU_MODES m)
+{
+    mode = m;
+    uint8_t n;
+    int bit = (int)m & 1;
+    int bit2 = ((int)m >> 1) & 1;
+    if (bit)
+    {
+        n = mmu->readByte(LCD_STAT_REG);
+        n |= 1;
+        mmu->writeByte(LCD_STAT_REG, n);
+    }
+    else
+    {
+        n = mmu->readByte(LCD_STAT_REG);
+        n &= ~((uint8_t)1);
+        mmu->writeByte(LCD_STAT_REG, n);
+    }
+
+    if (bit2)
+    {
+        n = mmu->readByte(LCD_STAT_REG);
+        n |= (1 << 1);
+        mmu->writeByte(LCD_STAT_REG, n);
+    }
+    else
+    {
+        n = mmu->readByte(LCD_STAT_REG);
+        n &= ~((uint8_t)(1 << 1));
+        mmu->writeByte(LCD_STAT_REG, n);
+    }
+}
+
+/*
 void GPU::tick(int cycles)
 {
     g_clocksum += cycles;
@@ -304,15 +337,18 @@ void GPU::tick(int cycles)
             incScanLine(); // increment LY register
             if (line == 143)
             {
-                mode = V_BLANK;
+                changeMode(V_BLANK);
                 // TODO: request interrupt
-
+                if ((mmu->readByte(LCD_STAT_REG) >> 3) & 0x01)
+                {
+                    // throw stat interrupt
+                }
                 calculateBG();
                 calculateWindowMap();
                 calculateSpriteMap();
             }
             else
-                mode = OAM_SCAN;
+                changeMode(OAM_SCAN);
         }
     }
     break;
@@ -321,15 +357,15 @@ void GPU::tick(int cycles)
         if (g_clocksum >= 456)
         {
             g_clocksum = 0;
-            if (line == 0)
+            if (line == 0) // TODO: debug line
             {
-                mode = OAM_SCAN;
+                changeMode(OAM_SCAN);
             }
             else
             {
                 incScanLine();
                 if (line == 0)
-                    mode = OAM_SCAN;
+                    changeMode(OAM_SCAN);
             }
         }
     }
@@ -339,7 +375,7 @@ void GPU::tick(int cycles)
         if (g_clocksum >= 80)
         {
             g_clocksum = 0;
-            mode = DRAW_PIXELS;
+            changeMode(DRAW_PIXELS);
         }
     }
     break;
@@ -348,7 +384,7 @@ void GPU::tick(int cycles)
         if (g_clocksum >= 172)
         {
             g_clocksum = 0;
-            mode = H_BLANK;
+            changeMode(H_BLANK);
             drawFrame();
             memset(bgMapA, 0, FB_SIZE);
             memset(spriteMapA, 0, FB_SIZE);
@@ -373,5 +409,80 @@ void GPU::tick(int cycles)
     else
     {
         mmu->writeByte(LCD_STAT_REG, mmu->readByte(LCD_STAT_REG) & ~4);
+    }
+} */
+
+void GPU::tick(int cycles)
+{
+    g_clocksum += cycles;
+    line = mmu->readByte(CURRENT_SCANLINE);
+    // set GPU mode depending on current # of cycles
+    // mode 0: H_BLANK (204 cycles), mode 2: OAM_SCAN (80cycles), mode 3: DRAW_PIXELS (172cycles)
+    if (g_clocksum < 81)
+    {
+        changeMode(OAM_SCAN);
+    }
+    else if (g_clocksum < 253)
+    {
+        changeMode(DRAW_PIXELS);
+    }
+    else if (g_clocksum < 457)
+    {
+        changeMode(H_BLANK);
+    }
+    // check if in VBLANK
+    if (!frameFlag && line == 144)
+    {
+        changeMode(V_BLANK);
+    }
+
+    if (g_clocksum > 252 && line < 145 && !lineFlag)
+    {
+        calculateBG();
+        calculateWindowMap();
+        calculateSpriteMap();
+        lineFlag = true;
+    }
+    if (line == 144 && !frameFlag)
+    {
+        // TODO: only draw if the LCD display is enabled
+        if (mmu->readByte(LCD_CNTRL_REG) >> 7)
+        {
+            mmu->writeByte(0xFF0F, mmu->readByte(0xFF0F) | 1);
+            drawFrame();
+            frameFlag = true;
+            memset(bgMapA, 0, FB_SIZE);
+            memset(winMapA, 0, FB_SIZE);
+            memset(spriteMapA, 0, FB_SIZE);
+        }
+    }
+    if (g_clocksum > 456)
+    {
+        g_clocksum -= 456;
+        line++;
+        mmu->incAddr(CURRENT_SCANLINE);
+        // incScanLine();
+        lineFlag = false;
+    }
+    LY_CMP = mmu->readByte(LYC);
+    if (line == LY_CMP)
+    {
+        if ((mmu->readByte(LCD_STAT_REG) >> 6) & 0x01)
+            if (((mmu->readByte(LCD_STAT_REG) >> 2) & 0x01) == 0)
+            {
+                mmu->writeByte(0xFF0F, mmu->readByte(0xFF0F) | 2); // TODO: rewrite
+                mmu->writeByte(LCD_STAT_REG, mmu->readByte(LCD_STAT_REG) | 4);
+            }
+    }
+    else
+    {
+        mmu->writeByte(LCD_STAT_REG, mmu->readByte(LCD_STAT_REG) & ~4);
+    }
+
+    if (line > 154)
+    {
+        line = 0;
+        mmu->writeByte(CURRENT_SCANLINE, 0);
+        frameFlag = false;
     }
 }

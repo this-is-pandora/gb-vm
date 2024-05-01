@@ -18,7 +18,7 @@ MMU::MMU()
     enable_ram = false;
     memset(&m_ram_banks, 0, sizeof(m_ram_banks));
     memset(&memory, 0, sizeof(memory));
-    memory[0x0] = 0x21; // for testing purposes
+    // booting = true;
     memory[0xFF05] = 0x00;
     memory[0xFF06] = 0x00;
     memory[0xFF05] = 0x00;
@@ -69,8 +69,11 @@ void MMU::loadROM(char *rom, size_t size)
 }
 void MMU::loadBootROM()
 {
-    std::cout << "loading boot ROM.." << endl;
+    // std::cout << "loading boot ROM..\n";
     loadROM("../bin/dmg_boot.bin", 0x100);
+    // FILE *file = fopen("../bin/dmg_boot.bin", "rb");
+    // fread(bootloader, 1, 0x100, file);
+    // fclose(file);
 }
 
 void MMU::unloadBootROM()
@@ -84,6 +87,8 @@ void MMU::unloadBootROM()
         {
         }
     }*/
+    // booting = false;
+    exit(EXIT_SUCCESS); // just quit
 }
 
 // MBC1 has 125 banks
@@ -117,6 +122,18 @@ uint8_t MMU::readByte(uint16_t addr)
 {
     // below 0x4000 is ROM bank 0.
     // 0x4000 - 0x7FFF may contain any bank other than bank 0
+    /*
+    if (booting)
+    {
+        if (addr < 0x0100)
+        {
+            return bootloader[addr];
+        }
+        else
+        {
+            return memory[addr];
+        }
+    } */
     if (addr >= 0x4000 && addr <= 0x7FFF)
     {
         // ROM Bank 1..NN, in cartridge
@@ -283,12 +300,12 @@ void MMU::writeByte(uint16_t addr, uint8_t value)
     if (addr < 0x8000)
     {
         // don't write anything to read-only memory
-        cout << "in read-only memory.." << endl;
+        // cout << "in read-only memory.." << endl;
         handleBanking(addr, value);
     }
     else if (addr >= 0xA000 && addr < 0xC000)
     {
-        cout << "enable ram" << endl;
+        // cout << "enable ram" << endl;
         if (enable_ram)
         {
             uint16_t n_addr = addr - 0xA000;
@@ -299,37 +316,36 @@ void MMU::writeByte(uint16_t addr, uint8_t value)
     {
         // writing to ECHO RAM will also write to RAM
         // RAM written to: 0xC000 - 0xDE00
-        cout << "echo RAM" << endl;
+        // cout << "echo RAM" << endl;
         memory[addr] = value;
         writeByte(addr - 0x2000, value);
     }
     else if (addr >= 0xFEA0 && addr < 0xFEFF)
     {
-        cout << "restricted area" << endl;
-        // restricted area
+        // cout << "restricted area" << endl;
+        //  restricted area
     }
     else if (addr == 0xFF50)
     {
         // unload boot rom
-        cout << "unloading boot rom" << endl;
+        // cout << "unloading boot rom" << endl;
         unloadBootROM();
     }
     // divider register
     else if ((addr == 0xFF04) || (addr == 0xFF44))
     {
-        cout << "divider reg" << endl;
+        // cout << "divider reg" << endl;
         memory[addr] = 0;
     }
     else if (addr == 0xFF46)
     {
-        cout << "direct memory access" << endl;
+        // cout << "direct memory access" << endl;
         DMATransfer(value);
     }
     else
     {
-        cout << "writing to memory.." << endl;
+        // cout << "writing to memory.." << endl;
         memory[addr] = value;
-        cout << "finished writing to memory.." << endl;
     }
 }
 

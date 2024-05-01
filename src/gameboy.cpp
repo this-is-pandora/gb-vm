@@ -3,61 +3,52 @@
 
 GameBoy::GameBoy()
 {
-    mmu = new MMU();
-    cpu = new CPU(mmu);
-    gpu = new GPU(mmu);
-    // jp = new JoyPad();
-    // spu = new SPU();
+    cycles = 0;
+    total_cycles = 0;
+    unpaused = true;
 }
 
 GameBoy::~GameBoy()
 {
     delete cpu;
     delete gpu;
-    delete mmu;
+    // delete mmu;
 }
-
-void GameBoy::initGameBoy()
+void GameBoy::loadMemory(char *rom)
 {
-    // mmu->writeByte(0xFF41, 0x80);
+    mmu->loadROM(rom, 0x8000);
     mmu->loadBootROM();
-    gpu->initGraphics();
-    // gpu->testFunc();
 }
-
-void GameBoy::update()
+void GameBoy::initialize()
 {
-    const int MAX_CYCLES = 69905;
-    int current_cycles = 0;
-    // emulation loop
-    while (current_cycles < MAX_CYCLES)
-    {
-        current_cycles += cpu->tick();
-        gpu->tick(current_cycles);
-    }
-    // renderGraphics();
+    // mmu->loadBootROM();
+    mmu = std::make_shared<MMU>();
+    cpu = new CPU(mmu);
+    gpu = new GPU(mmu);
+    h_interrupt = new InterruptHandler(mmu);
+    h_timer = new Timer(mmu);
+    loadMemory("../bin/Tetris.gb");
+    gpu->initGraphics();
 }
 
 void GameBoy::emulate()
 {
     // TODO: throttle the emulation
-    if (!unpaused)
+    if (total_cycles < MAX_CYCLES)
     {
         cycles = cpu->tick(); // step the CPU
-        gpu->tick(cycles);    // step the GPU
-        // TODO: handle timers & interrupts out here?
+        total_cycles += cycles;
+        gpu->tick(cycles); // step the GPU
+
+        if (h_timer->clockEnabled())
+            h_timer->handleTimers(cycles, h_interrupt);
+
+        /* TODO: interrupt handler
+        if (mmu->interruptsEnabled())
+            h_interrupt->handleInterrupts(cpu->getPC(), cpu->getSP()); */
+
         // TODO: handle window events & controls in VBLANK
-        // if (mmu->readByte())
-        // handleWindowEvents(event);
     }
+    else
+        total_cycles = 0;
 }
-/*
-void GameBoy::game_loop() {
-    // halt
-    // nop
-    // Vblank interrupt
-    // clear v-blank flag
-    // buttons
-    // game operation
-    // repeat
-} */
