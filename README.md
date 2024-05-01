@@ -14,7 +14,7 @@ TODO: Most important
 - [ ] Keyboard input & key-mapping
 - [x] Write the emulation code: emulation loop, rendering, etc.
 - [ ] Write unit tests & general testing
-- [ ] Write CMake code to compile program
+- [x] Write CMake code to compile program
 
 TODO: Other features & additions (if I have time)
 - [ ] Make the emulator playable via the web browser (maybe using WebAssembly)
@@ -26,6 +26,9 @@ TODO: Other features & additions (if I have time)
 - [ ] Audio & sound
 - [ ] Save & load game
 - [x] Exit
+
+Screenshots:
+<img width="877" alt="booting" src="https://github.com/this-is-pandora/gb-vm/assets/32402885/647e84a5-e099-4a1c-ad04-dff6e9697864">
 
 Useful resources:
 https://gbdev.io/pandocs/
