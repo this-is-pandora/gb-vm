@@ -42,14 +42,6 @@ void GPU::initGraphics()
     mmu->writeByte(LCD_STAT_REG, 0x80);
 }
 
-void GPU::testFunc()
-{
-    // mmu->writeByte(0xFF41, 0x80);
-    std::cout << "inside testFunc.." << std::endl;
-    uint8_t val = mmu->readByte(0x0);
-    std::cout << val << std::endl;
-}
-
 uint16_t GPU::getTileMap(int bit)
 {
     return (((mmu->readByte(LCD_CNTRL_REG) >> bit) & 1) == 1) ? 0x9C00 : 0x9800;
@@ -70,19 +62,6 @@ uint8_t GPU::read8800()
 {
     return (mmu->readByte(tileData + 0x800 + ((int8_t)tileID * 0x10) + (y_off % 8 * 2)) >> (7 - (x_off % 8)) & 0x1) +
            ((mmu->readByte(tileData + 0x800 + ((int8_t)tileID * 0x10) + (y_off % 8 * 2) + 1) >> (7 - (x_off % 8)) & 0x1) * 2);
-}
-
-void GPU::incScanLine()
-{
-    // line++;
-    // mmu->writeByte(CURRENT_SCANLINE, line);
-    mmu->incAddr(CURRENT_SCANLINE); // increment LY register
-    line = mmu->readByte(CURRENT_SCANLINE);
-    if (line > 153)
-    {
-        line = 0;
-        mmu->writeByte(CURRENT_SCANLINE, 0);
-    }
 }
 
 // fill the background map (w/ opacity) array
@@ -121,11 +100,11 @@ void GPU::calculateBG()
              * Notes on array mathematics:
              * say we have a 3D array: screen[row][height][pixels]
              * in our case: screen[256][256][4]
-             * to convert that 3D array into 1D: screen[row * height * pixels]
-             * to index the 3rd row, 3rd col, 1st pixel (really the '0th' pixel):
+             * to convert that 3D array into 1D: screen[row * height * pixels] = screen[256*256*4]
+             * to index the 3rd row, 3rd col, 1st pixel (aka the '0th' pixel):
              * for 3D array: screen[2][2][0]
-             * for 1D array: screen[(2 * height * 4) + (2 * 4) + 0]
-             * index = (x*height*depth) + (y*depth) + z
+             * for 1D array: screen[(row * height * pixels) + (col * pixels) + ith_pixel] = screen[(2*256*4) + (2*4) + 0]
+             * index formula: (x*height*depth) + (y*depth) + z
              */
             if (j == 3)
                 bgMapA[(line * 256 * 4) + (i * 4) + j] = 0xFF;
@@ -215,7 +194,7 @@ void GPU::calculateSpriteMap()
                         }
                         // 1. get color value
                         // 2. get RGB color from palette
-                        // 3. set sprite map A array
+                        // 3. store RGB data in the sprite map
                         palette = ((flags >> 4) & 1) ? SPRITE_PALETTE_1 : SPRITE_PALETTE_2;
                         color = (mmu->readByte(palette) >> (2 * color_val)) & 3;
                         // if color_val == 0, then it is transparent
@@ -235,21 +214,6 @@ void GPU::calculateSpriteMap()
         }
     }
 }
-
-/* TODO: perhaps rewrite some of the fxns into here for readability
-void GPU::drawScanline()
-{
-    LCDC = mmu->readByte(LCD_CNTRL_REG);
-    if (((LCDC >> BG_WIN_ENABLE) & 0x1) == 1)
-    {
-        // render tiles
-    }
-    if (((LCDC >> OBJ_ENABLE) & 0x1) == 1)
-    {
-        // render sprites
-    }
-    // etc.
-}*/
 
 /*
  * takes the calculated data stored in the frame buffers,
@@ -323,100 +287,16 @@ void GPU::changeMode(PPU_MODES m)
     }
 }
 
-/*
-void GPU::tick(int cycles)
+uint8_t GPU::getMode()
 {
-    g_clocksum += cycles;
-    switch (mode)
-    {
-    case H_BLANK:
-    {
-        if (g_clocksum >= 204)
-        {
-            g_clocksum = 0;
-            incScanLine(); // increment LY register
-            if (line == 143)
-            {
-                changeMode(V_BLANK);
-                // TODO: request interrupt
-                if ((mmu->readByte(LCD_STAT_REG) >> 3) & 0x01)
-                {
-                    // throw stat interrupt
-                }
-                calculateBG();
-                calculateWindowMap();
-                calculateSpriteMap();
-            }
-            else
-                changeMode(OAM_SCAN);
-        }
-    }
-    break;
-    case V_BLANK:
-    {
-        if (g_clocksum >= 456)
-        {
-            g_clocksum = 0;
-            if (line == 0) // TODO: debug line
-            {
-                changeMode(OAM_SCAN);
-            }
-            else
-            {
-                incScanLine();
-                if (line == 0)
-                    changeMode(OAM_SCAN);
-            }
-        }
-    }
-    break;
-    case OAM_SCAN:
-    {
-        if (g_clocksum >= 80)
-        {
-            g_clocksum = 0;
-            changeMode(DRAW_PIXELS);
-        }
-    }
-    break;
-    case DRAW_PIXELS:
-    {
-        if (g_clocksum >= 172)
-        {
-            g_clocksum = 0;
-            changeMode(H_BLANK);
-            drawFrame();
-            memset(bgMapA, 0, FB_SIZE);
-            memset(spriteMapA, 0, FB_SIZE);
-            memset(winMapA, 0, FB_SIZE);
-        }
-    }
-    break;
-    default:
-        break;
-    }
-    // set an LCD STAT interrupt
-    LY_CMP = mmu->readByte(LYC);
-    if (line == LY_CMP)
-    {
-        if ((mmu->readByte(LCD_STAT_REG) >> 6) & 0x01)
-            if (((mmu->readByte(LCD_STAT_REG) >> 2) & 0x01) == 0)
-            {
-                mmu->writeByte(0xFF0F, mmu->readByte(0xFF0F) | 2); // TODO: rewrite
-                mmu->writeByte(LCD_STAT_REG, mmu->readByte(LCD_STAT_REG) | 4);
-            }
-    }
-    else
-    {
-        mmu->writeByte(LCD_STAT_REG, mmu->readByte(LCD_STAT_REG) & ~4);
-    }
-} */
+    return mode;
+}
 
 void GPU::tick(int cycles)
 {
     g_clocksum += cycles;
     line = mmu->readByte(CURRENT_SCANLINE);
-    // set GPU mode depending on current # of cycles
+    // set GPU mode depending on current # of cycles passed
     // mode 0: H_BLANK (204 cycles), mode 2: OAM_SCAN (80cycles), mode 3: DRAW_PIXELS (172cycles)
     if (g_clocksum < 81)
     {
@@ -445,7 +325,6 @@ void GPU::tick(int cycles)
     }
     if (line == 144 && !frameFlag)
     {
-        // TODO: only draw if the LCD display is enabled
         if (mmu->readByte(LCD_CNTRL_REG) >> 7)
         {
             mmu->writeByte(0xFF0F, mmu->readByte(0xFF0F) | 1);

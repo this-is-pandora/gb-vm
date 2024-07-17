@@ -32,14 +32,14 @@ union Register
 
 class CPU
 {
+    friend class InterruptHandler;
+
 private:
     Register AF, BC, DE, HL;
     uint16_t sp; // 0xFFFE
     uint16_t pc; // will be 0x0100 after booting sequence
     // MMU *mmu;                       // memory management unit
     std::shared_ptr<MMU> mmu;
-    InterruptHandler *h_interrupts; // interrupt handler
-    Timer *h_timer;                 // timer handler
 
     // 256 opcodes & # of clock cycles each takes to execute
     uint8_t op_cycles[0x100] = {
@@ -78,7 +78,7 @@ private:
         8, 8, 8, 8, 8, 8, 16, 8, 8, 8, 8, 8, 8, 8, 16, 8};
     int clocksum; // counts # of clock cycles passed
     int clockSpeed;
-    /*TODO: these are CPU states, perhaps put them in an enum */
+    /*TODO: these are CPU states, perhaps put them in an enum later */
     bool accessedMemory;
     bool cpuStopped;
     bool cpuHalted;

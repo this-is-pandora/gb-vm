@@ -6,10 +6,12 @@ class FLAG_TEST : public testing::Test
 protected:
     void SetUp() override
     {
-        mmu = new MMU();
+        // mmu = new MMU();
+        mmu = std::make_shared<MMU>();
         cpu = new CPU(mmu);
     }
-    MMU *mmu;
+    // MMU *mmu;
+    std::shared_ptr<MMU> mmu;
     CPU *cpu;
 };
 

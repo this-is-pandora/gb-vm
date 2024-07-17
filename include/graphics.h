@@ -3,7 +3,6 @@
 #include <memory>
 #include "memory.h"
 #include "../SDL2/include/SDL2/SDL.h"
-// #include "gameboy.h"
 /* General notes:
  * the true resolution is actually 256x256 (or 32x32 tiles).
  * Of that 256x256, only 160x144 is what's actually seen by the player on screen
@@ -49,6 +48,7 @@
  * bit-5: Window enable
  * bit-6: Window tilemap; 0 = 0x9800-0x9BFF; 1 = 0x9C00-0x9FFF
  * bit-7 LCD & PPU enable
+ *
  * Notes for LCD STAT register
  * it contains the status of the LCD
  * 00 - horizontal blank
@@ -100,7 +100,7 @@ enum PPU_MODES
     OAM_SCAN, // search for objects
     DRAW_PIXELS
 };
-
+// TODO: refactor code to include this
 enum COLOR_PALETTE
 {
     WHITE, // for objects/sprites, ID = 0 means transparent
@@ -112,20 +112,17 @@ enum COLOR_PALETTE
 class GPU
 {
 private:
-    // uint8_t screenData[SCREEN_W][SCREEN_H][3];
     std::shared_ptr<MMU> mmu;
-    // MMU *mmu;
 
     int g_clocksum, line, tileMap, tileID, tileData;
     int scrollX, scrollY, STAT, LY, LY_CMP, LCDC, winX, winY;
     int x_off, y_off, x_offS, y_offS, x_offA, y_offA;
-
+    // TODO: create different color palettes
     int COLORS[12] = {
         0xFF, 0xFF, 0XFF,  // white = (255, 255, 255)
         0xAA, 0xAA, 0xAA,  // dark gray = (170, 170, 170)
         0x55, 0x55, 0x55,  // light gray = (85, 85, 85)
         0x00, 0x00, 0x00}; // black = (0, 0, 0)
-
     // uint8_t f_buffer[SCREEN_W * SCREEN_H * 3];  // RGB
     uint8_t f_bufferA[SCREEN_W * SCREEN_H * 4]; // RGBA
 
@@ -140,43 +137,27 @@ private:
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_Texture *textureA;
-    // SDL_Event event;
 
-    // PPU mode handlers
-    void handle_HBlank();
-    void handle_VBlank();
-    void scanOAM();
-    void drawPixels();
-
-    void incScanLine();
     void changeMode(PPU_MODES mode);
 
 public:
-    /*
-        GPU(shared_ptr<MMU> mmu)
-        {
-            mmu = mmu;
-            line = 0;
-            g_clocksum = 0;
-            mode = V_BLANK;
-        }*/
     GPU(std::shared_ptr<MMU> mmu);
     ~GPU();
     void initGraphics();
     bool lcdEnabled();
     void setPalette(); // TODO: create different color palettes
-    void testFunc();
+
     void setTileMap(int id);
     uint16_t getTileMap(int bit); // 2 32x32 tilemaps to choose from in the VRAM
     uint16_t getTileData(int bit);
     uint8_t read8000(); // 0x8000 addressing mode
     uint8_t read8800(); // 0x8800 addressing mode
-
+    uint8_t getMode();
     void calculateBG();
     void calculateWindowMap();
     void calculateSpriteMap();
-
     void drawScanline();
+
     // draw frame buffer to SDL_texture and then draw the texture w/ renderer
     void drawFrame();      // ~60 frames per second
     void tick(int cycles); // step the GPU

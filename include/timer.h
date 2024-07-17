@@ -36,11 +36,9 @@ private:
     // 4194304/4096 = 1024
     int t_clocksum = CLOCKSPEED / frequency; // TODO fix
     int div_clocksum = 0;
-    // MMU *memory;
     std::shared_ptr<MMU> memory;
 
 public:
-    // Timer(MMU *memory = NULL);
     Timer(std::shared_ptr<MMU> memory);
     void handleTimers(int cycles, InterruptHandler *interruptHandler);
     void handleDivider(int cycles);

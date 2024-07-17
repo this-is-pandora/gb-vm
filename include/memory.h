@@ -48,6 +48,7 @@ public:
     void enableInterrupts(bool value);
     bool interruptsEnabled();
     // void memory_dump();
+    void getJoypadState(); // for 0xFF00
     //  read & write
     void writeByte(uint16_t addr, uint8_t value);
     void writeWord(uint16_t addr, uint16_t value);

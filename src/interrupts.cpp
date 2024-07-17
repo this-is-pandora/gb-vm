@@ -1,8 +1,9 @@
 #include "../include/interrupts.h"
 
-InterruptHandler::InterruptHandler(std::shared_ptr<MMU> mmu) : mmu(mmu)
+InterruptHandler::InterruptHandler(std::shared_ptr<MMU> mmu, CPU *_cpu) : mmu(mmu)
 {
     // mmu = mmu;
+    cpu = _cpu;
 }
 
 bool InterruptHandler::readInterrupt(Interrupts i)
@@ -17,7 +18,7 @@ void InterruptHandler::requestInterrupt(int id)
     mmu->writeByte(IER, data);
 }
 
-void InterruptHandler::serviceInterrupt(int id, uint16_t &pc, uint16_t &sp)
+void InterruptHandler::serviceInterrupt(int id)
 {
     // disable interrupt
     // change IER so cpu knows interrupt has been serviced
@@ -25,27 +26,27 @@ void InterruptHandler::serviceInterrupt(int id, uint16_t &pc, uint16_t &sp)
     uint8_t reqs = mmu->readByte(IER);
     reqs &= ~(1 << id);
     mmu->writeByte(IER, reqs);
-    mmu->push(pc, sp);
+    mmu->push(cpu->pc, cpu->sp);
     switch (id)
     {
     case VBLANK:
-        pc = 0x40;
+        cpu->pc = 0x40;
         break;
     case LCD:
-        pc = 0x48;
+        cpu->pc = 0x48;
         break;
     case TIMER:
-        pc = 0x50;
+        cpu->pc = 0x50;
         break;
     case JOYPAD:
-        pc = 0x60;
+        cpu->pc = 0x60;
         break;
     default:
         break;
     }
 }
 
-void InterruptHandler::handleInterrupts(uint16_t &pc, uint16_t &sp)
+void InterruptHandler::handleInterrupts()
 {
 
     if (mmu->interruptsEnabled())
@@ -55,27 +56,22 @@ void InterruptHandler::handleInterrupts(uint16_t &pc, uint16_t &sp)
             // v-blank
             if (readInterrupt(VBLANK))
             {
-                serviceInterrupt(VBLANK, pc, sp);
+                serviceInterrupt(VBLANK);
             }
             // lcd
             if (readInterrupt(LCD))
             {
-                serviceInterrupt(LCD, pc, sp);
+                serviceInterrupt(LCD);
             }
             // timer
             if (readInterrupt(TIMER))
             {
-                serviceInterrupt(TIMER, pc, sp);
+                serviceInterrupt(TIMER);
             }
-            // serial
-            /*if (readInterrupt(SERIAL))
-            {
-                serviceInterrupt(SERIAL, pc, sp);
-            }*/
             // joypad
             if (readInterrupt(JOYPAD))
             {
-                serviceInterrupt(JOYPAD, pc, sp);
+                serviceInterrupt(JOYPAD);
             }
         }
     }

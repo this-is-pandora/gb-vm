@@ -146,7 +146,6 @@ uint8_t MMU::readByte(uint16_t addr)
         uint16_t n_addr = addr - 0xA000;
         return m_ram_banks[n_addr + (ram_bank_no * 0x2000)];
     }
-
     else if (addr == 0xFF00)
     {
         // TODO: read IO or joypad state

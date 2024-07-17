@@ -1,9 +1,7 @@
 // #include SDL2
 #define SDL_MAIN_HANDLED
+#include "../SDL2/include/SDL2/SDL.h"
 #include "../include/gameboy.h"
-#include <iostream>
-#include <windows.h>
-#include <fstream>
 /*
  * takes in a rom file as an argument
  * command line example: gbvm tetris.rom
@@ -15,7 +13,6 @@
  * run game loop until exit
 */
 
-/* TODO: GameBoy class has some errors it seems */
 int main(int argc, char *argv[])
 {
     GameBoy *gb = new GameBoy();
@@ -28,6 +25,8 @@ int main(int argc, char *argv[])
         {
             if (event.type == SDL_QUIT)
                 exit = true;
+            else
+                gb->handleInput(event);
         }
 
         gb->emulate();

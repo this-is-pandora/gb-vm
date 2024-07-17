@@ -34,6 +34,7 @@ private:
     InterruptHandler *h_interrupt;
     Timer *h_timer;
     int cycles, total_cycles;
+    uint8_t joypad; // stores the joypad state
 
 public:
     bool unpaused;
@@ -41,8 +42,12 @@ public:
     ~GameBoy();
     void loadMemory(char *rom);
     void initialize();
-    // void handleInput();
-    // void reset();
-    void update();
+
+    int handleKeyEvent(SDL_Event &e);
+    void handleKeyPressed(int key);
+    void handleKeyReleased(int key);
+    void handleInput(SDL_Event &e);
+    uint8_t readInput(uint8_t val);
+
     void emulate();
 };

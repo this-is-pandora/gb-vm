@@ -20,16 +20,8 @@ CPU::CPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
     sp = 0x0;
     pendingDisable = false;
     pendingEnable = false;
-    // gb = gb_;
-    //  h_interrupts = new InterruptHandler(mmu);
-    //  h_timer = new Timer(mmu);
 }
 
-CPU::~CPU()
-{
-    delete h_timer;
-    delete h_interrupts;
-}
 /* output current CPU register values*/
 void CPU::status()
 {
@@ -1094,11 +1086,6 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xFE:
     {
-        /*
-         * In the bootrom, our CPU runs instruction 0x34
-         * after running 0xFE. 0x34 is supposed to be the arg to 0xFE
-         * The instruction afterwards is JR NZ, ADDR
-         */
         uint8_t n = readByte(pc++); // TODO check
         CPU_8BIT_CP(AF.hi, n);
     }
@@ -1122,43 +1109,10 @@ int CPU::execute(uint8_t opcode)
         return op_cycles[opcode];
 }
 
-// TODO: finsih & check for semantic errors
 int CPU::tick()
 {
     int cycles = 0;
-    /*
-    while (!cpuStopped)
-    {
-        if (!cpuHalted)
-        {
-            // if EI/DI is called, it will enable/disable interrupts after the next instruction
-            if (pendingEnable)
-            { // TODO: rework this code
-                mmu->enableInterrupts(true);
-                pendingEnable = false;
-            }
-            else if (pendingDisable)
-            {
-                mmu->enableInterrupts(false);
-                pendingDisable = false;
-            }
-            std::cout << "fetching opcode.." << std::endl;
-            // 1. fetch instruction
-            uint8_t opcode = fetch();
-            std::cout << "decoding & executing.." << std::endl;
-            // 2. decode & execute
-            cycles = execute(opcode);
-        }
-        else
-            cycles = 4;
-        // 3. handle timer
-        if (h_timer->clockEnabled())
-            h_timer->handleTimers(cycles, h_interrupts);
-        // 4. handle interrupts
-        if (mmu->interruptsEnabled())
-            h_interrupts->handleInterrupts(pc, sp);
-        // 5. if (exit) break;
-    }*/
+
     if (!cpuHalted)
     {
         if (pendingEnable)
