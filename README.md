@@ -27,6 +27,13 @@ TODO: Other features & additions (if I have time)
 - [ ] Save & load game
 - [x] Exit
 
+How to run:
+```
+cmake -S . -B build
+cmake --build build
+./build/gbvm
+```
+
 Screenshots:
 <img width="877" alt="booting" src="https://github.com/this-is-pandora/gb-vm/assets/32402885/647e84a5-e099-4a1c-ad04-dff6e9697864">
 

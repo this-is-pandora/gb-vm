@@ -42,6 +42,7 @@ private:
     std::shared_ptr<MMU> mmu;
 
     // 256 opcodes & # of clock cycles each takes to execute
+    // TODO: merge these 2 arrays into one?
     uint8_t op_cycles[0x100] = {
         4, 12, 8, 8, 4, 4, 8, 4, 20, 8, 8, 8, 4, 4, 8, 4,
         4, 12, 8, 8, 4, 4, 8, 4, 12, 8, 8, 8, 4, 4, 8, 4,
