@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.14)
-project(gb-vm)
+
+set(CMAKE_CXX_COMPILER "C:/mingw64/bin/g++.exe")
+set(CMAKE_C_COMPILER "C:/mingw64/bin/gcc.exe")
 
 # GoogleTest requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include(FetchContent)
+project(gbvm)
+
+#[[include(FetchContent)
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
@@ -13,38 +17,27 @@ FetchContent_Declare(
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+]]
 
 # link to SDL2
 set(SDL2_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/SDL2/include/SDL2)
 set(SDL2_LIB_DIR ${CMAKE_SOURCE_DIR}/SDL2/lib/)
-include_directories(${SDL2_INCLUDE_DIR})
+#include(CTest)
+
+include_directories(
+  ${SDL2_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/src
+  )
+
 link_directories(${SDL2_LIB_DIR})
+#add_subdirectory(test)
 
-# testing stuff
-include(CTest)
-include_directories(include)
-add_subdirectory(test)
-
-
-
-set(SOURCES
-    ../src/main.cpp
-    ../src/gameboy.cpp
-    ../src/graphics.cpp
-    ../src/opcodes.cpp
-    ../src/cpu.cpp
-    ../src/memory.cpp
-    ../src/interrupts.cpp
-    ../src/timer.cpp
-    ../include/cpu.h
-    ../include/graphics.h
-    ../include/memory.h
-    ../include/interrupts.h
-    ../include/timer.h
-    ../include/gameboy.h
-
+file(GLOB SOURCES 
+  "${PROJECT_SOURCE_DIR}/include/*.h"
+  "${PROJECT_SOURCE_DIR}/src/*.cpp"
 )
 
-add_executable(gbvm ${SOURCES} ${INCLUDE_DIRECTORIES})
+add_executable(gbvm ${SOURCES})
 target_link_libraries(gbvm mingw32 SDL2main SDL2)
 

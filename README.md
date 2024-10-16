@@ -14,6 +14,8 @@ TODO: Most important
 - [ ] Keyboard input & key-mapping
 - [x] Write the emulation code: emulation loop, rendering, etc.
 - [ ] Write unit tests & general testing
+- [ ] Rework the code for interrupt handling w/ stricter separation between memory handling routines and interrupt handling routines
+- [ ] Rewrite some of the code to utilize the singleton pattern
 - [x] Write CMake code to compile program
 
 TODO: Other features & additions (if I have time)
@@ -38,8 +40,13 @@ Screenshots:
 <img width="877" alt="booting" src="https://github.com/this-is-pandora/gb-vm/assets/32402885/647e84a5-e099-4a1c-ad04-dff6e9697864">
 
 Useful resources:
+
 https://gbdev.io/pandocs/
+
 https://fms.komkon.org/EMUL8/HOWTO.html
+
 https://hacktix.github.io/GBEDG/ppu/#the-concept-of-scanlines
+
 https://github.com/AntonioND/giibiiadvance/blob/master/docs/other_docs/GBSOUND.txt
+
 https://izik1.github.io/gbops/index.html
