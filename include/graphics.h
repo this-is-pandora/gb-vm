@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include <memory>
 #include "memory.h"
-#include "../SDL2/include/SDL2/SDL.h"
+//#include "../SDL2/include/SDL2/SDL.h"
+#include <SDL.h>
 /* General notes:
  * the true resolution is actually 256x256 (or 32x32 tiles).
  * Of that 256x256, only 160x144 is what's actually seen by the player on screen
