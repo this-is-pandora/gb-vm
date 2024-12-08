@@ -1,7 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <memory>
-#include "memory.h"
+#include "./memory.h"
 
 /*
  * the GameBoy action/direction buttons are stored as a 2x4 matrix.

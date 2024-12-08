@@ -22,6 +22,10 @@ CPU::CPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
     pendingEnable = false;
 }
 
+CPU::~CPU() {
+    
+}
+
 /* output current CPU register values*/
 void CPU::status()
 {
@@ -53,6 +57,14 @@ uint16_t CPU::getSP()
 uint16_t CPU::getOP()
 {
     return mmu->readByte(pc);
+}
+
+void CPU::setPC(uint16_t val) {
+    this->pc = val;
+}
+
+void CPU::setSP(uint16_t val) {
+    this->pc = val;
 }
 
 void CPU::writeByte(uint16_t addr, uint8_t data)
@@ -89,7 +101,7 @@ void CPU::setZeroFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_Z);
+        CPU_SETBIT(AF.lo, FLAG_Z);
     }
     else
     {
@@ -105,7 +117,7 @@ void CPU::setSubtractFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_N);
+        CPU_SETBIT(AF.lo, FLAG_N);
     }
     else
     {
@@ -122,7 +134,7 @@ void CPU::setCarryFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_C);
+        CPU_SETBIT(AF.lo, FLAG_C);
     }
     else
     {
@@ -139,7 +151,7 @@ void CPU::setHalfCarryFlag(bool val)
 {
     if (val)
     {
-        CPU_SET(AF.lo, FLAG_H);
+        CPU_SETBIT(AF.lo, FLAG_H);
     }
     else
     {
@@ -1559,228 +1571,228 @@ void CPU::executeExtendedOpcode()
         break;
     // SET b,r
     case 0xC7:
-        CPU_SET(AF.hi, 0);
+        CPU_SETBIT(AF.hi, 0);
         break;
     case 0xC0:
-        CPU_SET(BC.hi, 0);
+        CPU_SETBIT(BC.hi, 0);
         break;
     case 0xC1:
-        CPU_SET(BC.lo, 0);
+        CPU_SETBIT(BC.lo, 0);
         break;
     case 0xC2:
-        CPU_SET(DE.hi, 0);
+        CPU_SETBIT(DE.hi, 0);
         break;
     case 0xC3:
-        CPU_SET(DE.lo, 0);
+        CPU_SETBIT(DE.lo, 0);
         break;
     case 0xC4:
-        CPU_SET(HL.hi, 0);
+        CPU_SETBIT(HL.hi, 0);
         break;
     case 0xC5:
-        CPU_SET(HL.lo, 0);
+        CPU_SETBIT(HL.lo, 0);
         break;
     case 0xC6:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 0);
+        CPU_SETBIT(n, 0);
         writeByte(HL.value, n);
     }
     break;
     case 0xC8:
-        CPU_SET(BC.hi, 1);
+        CPU_SETBIT(BC.hi, 1);
         break;
     case 0xC9:
-        CPU_SET(BC.lo, 1);
+        CPU_SETBIT(BC.lo, 1);
         break;
     case 0xCA:
-        CPU_SET(DE.hi, 1);
+        CPU_SETBIT(DE.hi, 1);
         break;
     case 0xCB:
-        CPU_SET(DE.lo, 1);
+        CPU_SETBIT(DE.lo, 1);
         break;
     case 0xCC:
-        CPU_SET(HL.hi, 1);
+        CPU_SETBIT(HL.hi, 1);
         break;
     case 0xCD:
-        CPU_SET(HL.lo, 1);
+        CPU_SETBIT(HL.lo, 1);
         break;
     case 0xCE:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 1);
+        CPU_SETBIT(n, 1);
         writeByte(HL.value, n);
     }
     break;
     case 0xCF:
-        CPU_SET(AF.hi, 1);
+        CPU_SETBIT(AF.hi, 1);
         break;
     case 0xD0:
-        CPU_SET(BC.hi, 2);
+        CPU_SETBIT(BC.hi, 2);
         break;
     case 0xD1:
-        CPU_SET(BC.lo, 2);
+        CPU_SETBIT(BC.lo, 2);
         break;
     case 0xD2:
-        CPU_SET(DE.hi, 2);
+        CPU_SETBIT(DE.hi, 2);
         break;
     case 0xD3:
-        CPU_SET(DE.lo, 2);
+        CPU_SETBIT(DE.lo, 2);
         break;
     case 0xD4:
-        CPU_SET(HL.hi, 2);
+        CPU_SETBIT(HL.hi, 2);
         break;
     case 0xD5:
-        CPU_SET(HL.lo, 2);
+        CPU_SETBIT(HL.lo, 2);
         break;
     case 0xD6:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 2);
+        CPU_SETBIT(n, 2);
         writeByte(HL.value, n);
     }
     break;
     case 0xD7:
-        CPU_SET(AF.hi, 2);
+        CPU_SETBIT(AF.hi, 2);
         break;
     case 0xD8:
-        CPU_SET(BC.hi, 3);
+        CPU_SETBIT(BC.hi, 3);
         break;
     case 0xD9:
-        CPU_SET(BC.lo, 3);
+        CPU_SETBIT(BC.lo, 3);
         break;
     case 0xDA:
-        CPU_SET(DE.hi, 3);
+        CPU_SETBIT(DE.hi, 3);
         break;
     case 0xDB:
-        CPU_SET(DE.lo, 3);
+        CPU_SETBIT(DE.lo, 3);
         break;
     case 0xDC:
-        CPU_SET(HL.hi, 3);
+        CPU_SETBIT(HL.hi, 3);
         break;
     case 0xDD:
-        CPU_SET(HL.lo, 3);
+        CPU_SETBIT(HL.lo, 3);
         break;
     case 0xDE:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 3);
+        CPU_SETBIT(n, 3);
         writeByte(HL.value, n);
     }
     break;
     case 0xDF:
-        CPU_SET(AF.hi, 3);
+        CPU_SETBIT(AF.hi, 3);
         break;
     case 0xE0:
-        CPU_SET(BC.hi, 4);
+        CPU_SETBIT(BC.hi, 4);
         break;
     case 0xE1:
-        CPU_SET(BC.lo, 4);
+        CPU_SETBIT(BC.lo, 4);
         break;
     case 0xE2:
-        CPU_SET(DE.hi, 4);
+        CPU_SETBIT(DE.hi, 4);
         break;
     case 0xE3:
-        CPU_SET(DE.lo, 4);
+        CPU_SETBIT(DE.lo, 4);
         break;
     case 0xE4:
-        CPU_SET(HL.hi, 4);
+        CPU_SETBIT(HL.hi, 4);
         break;
     case 0xE5:
-        CPU_SET(HL.lo, 4);
+        CPU_SETBIT(HL.lo, 4);
         break;
     case 0xE6:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 4);
+        CPU_SETBIT(n, 4);
         writeByte(HL.value, n);
     }
     break;
     case 0xE7:
-        CPU_SET(AF.hi, 4);
+        CPU_SETBIT(AF.hi, 4);
         break;
     case 0xE8:
-        CPU_SET(BC.hi, 5);
+        CPU_SETBIT(BC.hi, 5);
         break;
     case 0xE9:
-        CPU_SET(BC.lo, 5);
+        CPU_SETBIT(BC.lo, 5);
         break;
     case 0xEA:
-        CPU_SET(DE.hi, 5);
+        CPU_SETBIT(DE.hi, 5);
         break;
     case 0xEB:
-        CPU_SET(DE.lo, 5);
+        CPU_SETBIT(DE.lo, 5);
         break;
     case 0xEC:
-        CPU_SET(HL.hi, 5);
+        CPU_SETBIT(HL.hi, 5);
         break;
     case 0xED:
-        CPU_SET(HL.lo, 5);
+        CPU_SETBIT(HL.lo, 5);
         break;
     case 0xEE:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 5);
+        CPU_SETBIT(n, 5);
         writeByte(HL.value, n);
     }
     break;
     case 0xEF:
-        CPU_SET(AF.hi, 5);
+        CPU_SETBIT(AF.hi, 5);
         break;
     case 0xF0:
-        CPU_SET(BC.hi, 6);
+        CPU_SETBIT(BC.hi, 6);
         break;
     case 0xF1:
-        CPU_SET(BC.lo, 6);
+        CPU_SETBIT(BC.lo, 6);
         break;
     case 0xF2:
-        CPU_SET(DE.hi, 6);
+        CPU_SETBIT(DE.hi, 6);
         break;
     case 0xF3:
-        CPU_SET(DE.lo, 6);
+        CPU_SETBIT(DE.lo, 6);
         break;
     case 0xF4:
-        CPU_SET(HL.hi, 6);
+        CPU_SETBIT(HL.hi, 6);
         break;
     case 0xF5:
-        CPU_SET(HL.lo, 6);
+        CPU_SETBIT(HL.lo, 6);
         break;
     case 0xF6:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 6);
+        CPU_SETBIT(n, 6);
         writeByte(HL.value, n);
     }
     break;
     case 0xF7:
-        CPU_SET(AF.hi, 6);
+        CPU_SETBIT(AF.hi, 6);
         break;
     case 0xF8:
-        CPU_SET(BC.hi, 7);
+        CPU_SETBIT(BC.hi, 7);
         break;
     case 0xF9:
-        CPU_SET(BC.lo, 7);
+        CPU_SETBIT(BC.lo, 7);
         break;
     case 0xFA:
-        CPU_SET(DE.hi, 7);
+        CPU_SETBIT(DE.hi, 7);
         break;
     case 0xFB:
-        CPU_SET(DE.lo, 7);
+        CPU_SETBIT(DE.lo, 7);
         break;
     case 0xFC:
-        CPU_SET(HL.hi, 7);
+        CPU_SETBIT(HL.hi, 7);
         break;
     case 0xFD:
-        CPU_SET(HL.lo, 7);
+        CPU_SETBIT(HL.lo, 7);
         break;
     case 0xFE:
     {
         uint8_t n = readByte(HL.value);
-        CPU_SET(n, 7);
+        CPU_SETBIT(n, 7);
         writeByte(HL.value, n);
     }
     break;
     case 0xFF:
-        CPU_SET(AF.hi, 7);
+        CPU_SETBIT(AF.hi, 7);
         break;
     // TODO: RES b,r
     case 0x87:
@@ -1883,7 +1895,7 @@ void CPU::executeExtendedOpcode()
         CPU_RES(HL.hi, 3);
         break;
     case 0x9D:
-        CPU_SET(HL.lo, 3);
+        CPU_SETBIT(HL.lo, 3);
         break;
     case 0x9E:
     {

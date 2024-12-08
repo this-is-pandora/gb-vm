@@ -25,7 +25,7 @@ void GameBoy::initialize()
     mmu = std::make_shared<MMU>();
     cpu = new CPU(mmu);
     gpu = new GPU(mmu);
-    h_interrupt = new InterruptHandler(mmu, cpu);
+    h_interrupt = new InterruptHandler(mmu);
     h_timer = new Timer(mmu);
     loadMemory("../bin/Tetris.gb");
     gpu->initGraphics();
@@ -109,7 +109,7 @@ void GameBoy::emulate()
             h_timer->handleTimers(cycles, h_interrupt);
         // do interrupts
         if (mmu->interruptsEnabled())
-            h_interrupt->handleInterrupts();
+            h_interrupt->handleInterrupts(cpu);
     }
     else
         total_cycles = 0;

@@ -1,11 +1,11 @@
 #pragma once
 #include <cstdint>
 #include <memory>
-#include "cpu.h"
-#include "memory.h"
-#include "interrupts.h"
-#include "timer.h"
-#include "graphics.h"
+#include "./cpu.h"
+#include "./memory.h"
+#include "./interrupts.h"
+#include "./timer.h"
+#include "./graphics.h"
 
 #define FPS 60
 #define MAX_CYCLES 669905

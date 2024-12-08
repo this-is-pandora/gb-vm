@@ -535,7 +535,7 @@ void CPU::CPU_BIT(uint8_t n, uint8_t r)
     setHalfCarryFlag(true);
 }
 
-void CPU::CPU_SET(uint8_t &n, uint8_t r)
+void CPU::CPU_SETBIT(uint8_t &n, uint8_t r)
 {
     int mask = 1 << r;
     n |= mask;

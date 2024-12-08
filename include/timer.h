@@ -1,8 +1,8 @@
 #pragma once
 #include <stdint.h>
 #include <memory>
-#include "memory.h"
-#include "interrupts.h"
+#include "./memory.h"
+#include "./interrupts.h"
 
 // memory addresses
 #define DIV_REG 0xFF04 // divider register

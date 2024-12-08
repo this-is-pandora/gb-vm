@@ -1,9 +1,9 @@
 #pragma once
 #include <stdint.h>
 #include <memory>
-#include "memory.h"
-#include "interrupts.h"
-#include "timer.h"
+#include "./memory.h"
+// #include "./interrupts.h"
+// #include "./timer.h"
 
 // for doing flag calculations
 #define FLAG_MASK_Z 128
@@ -32,7 +32,7 @@ union Register
 
 class CPU
 {
-    friend class InterruptHandler;
+    //friend class InterruptHandler;
 
 private:
     Register AF, BC, DE, HL;
@@ -145,7 +145,7 @@ private:
     void CPU_SRL_MEM(uint16_t addr);
     // bits & bytes
     void CPU_BIT(uint8_t n, uint8_t r);  // test bit
-    void CPU_SET(uint8_t &n, uint8_t r); // set bit
+    void CPU_SETBIT(uint8_t &n, uint8_t r); // set bit
     void CPU_RES(uint8_t &n, uint8_t r); // reset bit
     void CPU_SWAP(uint8_t &n);
     // jumps
@@ -170,7 +170,9 @@ public:
 
     void status();
     uint16_t getPC();
+    void setPC(uint16_t val);
     uint16_t getSP();
+    void setSP(uint16_t val);
     uint16_t getOP();
     // flag methods
     bool getZeroFlag() const;
