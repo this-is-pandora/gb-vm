@@ -3,14 +3,16 @@
 #include <iostream>
 
 using namespace std;
-// total RAM size: 0xFFFF
 
-// work RAM: 0xC000 - 0xDFFF
-// external RAM: 0xA000 - 0xBFFF
-// echo RAM: E000 - FDFF
-// vram: 0x8000 - 9FFF (8kB)
-// IO: 0xFF00 -
-// hram: 0xFF80 - 0xFFFE
+/*
+* total RAM size: 0xFFFF
+* work RAM: 0xC000 - 0xDFFF
+* external RAM: 0xA000 - 0xBFFF
+* echo RAM: E000 - FDFF
+* vram: 0x8000 - 9FFF (8kB)
+* IO: 0xFF00 -
+* hram: 0xFF80 - 0xFFFE */
+
 MMU::MMU()
 {
     rom_bank_no = 1;
@@ -59,21 +61,13 @@ void MMU::loadROM(char *rom, size_t size)
     // 1. open the rom file
     // 2. read file into the ROM (should take up the first 32kB or so)
     // 3. close file
-    /*memset(m_rom_banks, 0, sizeof(m_rom_banks));
-    FILE *file = fopen(rom, "rb");
-    fread(m_rom_banks, 1, 0x200000, file);
-    fclose(file);*/
     FILE *file = fopen(rom, "rb");
     fread(memory, 1, size, file);
     fclose(file);
 }
 void MMU::loadBootROM()
 {
-    // std::cout << "loading boot ROM..\n";
     loadROM("../bin/dmg_boot.bin", 0x100);
-    // FILE *file = fopen("../bin/dmg_boot.bin", "rb");
-    // fread(bootloader, 1, 0x100, file);
-    // fclose(file);
 }
 
 void MMU::unloadBootROM()

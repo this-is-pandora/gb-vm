@@ -12,7 +12,7 @@ GameBoy::~GameBoy()
 {
     delete cpu;
     delete gpu;
-    // delete mmu;
+    //delete mmu;
 }
 void GameBoy::loadMemory(char *rom)
 {

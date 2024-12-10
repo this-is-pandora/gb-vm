@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include <memory>
 #include "./memory.h"
-// #include "./interrupts.h"
-// #include "./timer.h"
 
 // for doing flag calculations
 #define FLAG_MASK_Z 128
@@ -164,7 +162,6 @@ private:
     void executeExtendedOpcode(); // if opcode starts w/ 0xCB
 
 public:
-    // CPU(MMU *mmu);
     CPU(std::shared_ptr<MMU> mmu);
     ~CPU();
 
