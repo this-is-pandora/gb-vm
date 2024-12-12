@@ -6,6 +6,7 @@ GameBoy::GameBoy()
     cycles = 0;
     total_cycles = 0;
     unpaused = true;
+    _gameLoaded = false;
 }
 
 GameBoy::~GameBoy()
@@ -14,11 +15,13 @@ GameBoy::~GameBoy()
     delete gpu;
     //delete mmu;
 }
+
 void GameBoy::loadMemory(char *rom)
 {
     mmu->loadROM(rom, 0x8000);
     mmu->loadBootROM();
 }
+
 void GameBoy::initialize()
 {
     // mmu->loadBootROM();
@@ -27,7 +30,19 @@ void GameBoy::initialize()
     gpu = new GPU(mmu);
     h_interrupt = new InterruptHandler(mmu);
     h_timer = new Timer(mmu);
-    loadMemory("../bin/Tetris.gb");
+    // TODO: wait till a file is loaded
+    //loadMemory("../bin/Tetris.gb");
+    gpu->initGraphics();
+}
+
+void GameBoy::initialize(char *rom) {
+    mmu = std::make_shared<MMU>();
+    cpu = new CPU(mmu);
+    gpu = new GPU(mmu);
+    h_interrupt = new InterruptHandler(mmu);
+    h_timer = new Timer(mmu);
+    loadMemory(rom);
+    _gameLoaded = true;
     gpu->initGraphics();
 }
 

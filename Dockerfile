@@ -8,12 +8,13 @@ RUN apt-get update && apt-get install -y \
     libsdl2-mixer-dev \
     libsdl2-ttf-dev
 
+COPY . /app/
+
 WORKDIR /app
 
-COPY . /app
 
 RUN cd /app \
     cmake -S . -B build \
     cmake --build build
 
-ENTRYPOINT [ "./build/gbvm" ]
+CMD [ "./build/gbvm" ]

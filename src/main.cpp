@@ -19,7 +19,12 @@ int main(int argc, char *argv[])
     GameBoy *gb = new GameBoy();
     SDL_Event event;
     bool exit = false;
-    gb->initialize();
+
+    if ((argc - 1) == 0)
+        gb->initialize();
+    else
+        gb->initialize(argv[1]);
+
     while (!exit)
     {
         while (SDL_PollEvent(&event) != 0)

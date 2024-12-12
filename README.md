@@ -1,39 +1,61 @@
-A gameboy emulator written in C++
-No sound or color is implemented (yet).
-Will mainly only concern myself with games w/o an MBC, e.g. Tetris
+# about
+An emulator application that's based on the original GameBoy with its Sharp SM83 processor. The implementation of the emulator itself is currently rather basic and still a WIP, but it should be able to run games that don't use MBC's, e.g. Tetris.
 
-TODO: Most important
-- [x] Implement the CPU instruction set, i.e. the opcodes
-- [x] Implement the ROM, RAM, & other memory-implements
-- [x] Implement DMA transfer
-- [x] Ability to load a ROM or .gb file into memory
-- [x] Implement interrupts & interrupt handling
-- [x] Implement CPU clock & other timing elements
-- [x] Implement functions for graphical calculations & data
-- [x] Implement a window & functions to render graphics
-- [ ] Keyboard input & key-mapping
-- [x] Write the emulation code: emulation loop, rendering, etc.
-- [ ] Write unit tests & general testing
-- [ ] Rework the code for interrupt handling w/ stricter separation between memory handling routines and interrupt handling routines
-- [ ] Rewrite some of the code to utilize the singleton pattern
-- [x] Write CMake code to compile program
+## technical specifications
+The specifications of the original GameBoy are as follows: 
 
-TODO: Other features & additions (if I have time)
-- [ ] Make the emulator playable via the web browser (maybe using WebAssembly)
-- [ ] Menu to select and load .gb file
-- [ ] Implement MBC1
-- [ ] Implement other MBCs
-- [ ] Refactoring: optimize & clean up code
-- [ ] Color
-- [ ] Audio & sound
-- [ ] Save & load game
-- [x] Exit
+<table>
+    <thead>
+        <tr>
+            <th>spec</th>
+            <th>value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Resolution</td>
+            <td>160(w) x 144(h) pixels</td>
+        </tr>
+        <tr>
+            <td>Frame rate</td>
+            <td>≈59.7Hz</td>
+        </tr>
+        <tr>
+            <td>Color support</td>
+            <td>0x0, 0x1, 0x2, 0x3</td>
+        </tr>
+        <tr>
+            <td>SoC</td>
+            <td>Nintendo DMG-CPU</td>
+        </tr>
+        <tr>
+            <td>WRAM</td>
+            <td>8KB</td>
+        </tr>
+        <tr>
+            <td>VRAM</td>
+            <td>8KB</td>
+        </tr>
+        <tr>
+            <td>External</td>
+            <td>Up to 1MB ROM and 128KB RAM</td>
+        </tr>
+    </tbody>
+</table>
 
-Screenshots:
+## usage
+This app can be run via the terminal like so:
+```
+./gbvm Tetris.rom
+```
+Or you can run the executable and load in a ROM file from memory.
+
+The ROM files aren't packaged with this application so you'll have to download or buy the ROM files yourself from somewhere.
+
+## screenshots
 <img width="877" alt="booting" src="https://github.com/this-is-pandora/gb-vm/assets/32402885/647e84a5-e099-4a1c-ad04-dff6e9697864">
 
-Useful resources:
-
+## resources:
 https://gbdev.io/pandocs/
 
 https://fms.komkon.org/EMUL8/HOWTO.html

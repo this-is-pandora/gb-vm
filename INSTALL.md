@@ -4,6 +4,8 @@
 First, clone this repo to your computer:
 ```
 git clone https://github.com/this-is-pandora/gb-vm.git
+git branch -a
+git checkout <your-branch-of-choice>
 ```
 Then, run these commands:
 ```
@@ -13,10 +15,7 @@ cmake --build
 ```
 This requires SDL2, cmake, and g++ be installed on your computer.
 
-## windows-specific installation
-UNDER CONSTRUCTION
-
-## running with docker
+## running with docker [wip]
 Make sure the docker daemon is up and running, then run these commands after cloning this repo to your computer:
 ```
 docker build -t app .

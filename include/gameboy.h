@@ -35,13 +35,15 @@ private:
     Timer *h_timer;
     int cycles, total_cycles;
     uint8_t joypad; // stores the joypad state
-
+    bool _gameLoaded;
+    
 public:
     bool unpaused;
     GameBoy();
     ~GameBoy();
     void loadMemory(char *rom);
     void initialize();
+    void initialize(char *rom);
 
     int handleKeyEvent(SDL_Event &e);
     void handleKeyPressed(int key);
