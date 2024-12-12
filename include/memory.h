@@ -24,7 +24,7 @@ private:
 
     // uint8_t bootloader[0x100]; // stores booting code
     uint8_t memory[0x10000]; // 65536 bytes
-    bool booting;
+    //bool booting;
     bool MBC1, MBC2, MBC3;
     bool enable_ram;
     bool rom_banking;
