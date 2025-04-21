@@ -1,5 +1,6 @@
-#include "../include/graphics.h"
+#include "graphics.h"
 #include <iostream>
+#include <windows.h>
 
 GPU::GPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
 {
@@ -9,6 +10,14 @@ GPU::GPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
     mode = OAM_SCAN;
     lineFlag = false;
     frameFlag = false;
+    // everything below is for testing
+    /*
+    memset(bgMapA, 0x0, FB_SIZE_A);
+    memset(spriteMapA, 0x0, FB_SIZE_A);
+    memset(winMapA, 0x0, FB_SIZE_A);
+    scrollX = 0;
+    scrollY = 0;
+    mmu->writeByte(LCD_STAT_REG, 0x80);*/
 }
 
 GPU::~GPU()
@@ -36,6 +45,21 @@ void GPU::initGraphics()
     memset(bgMapA, 0x0, FB_SIZE_A);
     memset(spriteMapA, 0x0, FB_SIZE_A);
     memset(winMapA, 0x0, FB_SIZE_A);
+
+    /* GUI STUFF
+    SDL_SetWindowTitle(window, "GameBoy");
+
+    SDL_SysWMinfo windowInfo;
+    SDL_VERSION(&windowInfo.version);
+    HWND hwnd = windowInfo.info.win.window;
+    HMENU hMenu = CreateMenu();
+    HMENU hFile = CreateMenu();
+
+    AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hFile, "main");
+    AppendMenu(hFile, MF_STRING, 9, "load");
+    SetMenu(hwnd, hMenu);*/
+
+    SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
 
     scrollX = 0;
     scrollY = 0;

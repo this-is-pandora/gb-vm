@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <memory>
+#include <thread>
 #include "cpu.h"
 #include "memory.h"
 #include "interrupts.h"
@@ -9,6 +10,10 @@
 
 #define FPS 60
 #define MAX_CYCLES 669905
+// #define DEBUG_M
+#ifdef DEBUG_M
+#include <fstream>
+#endif
 /*
  * GameBoy has 8 8-bit registers (A,B,C,...,H,L)
  * and 2 16-bit registers (SP, PC)
@@ -34,7 +39,12 @@ private:
     InterruptHandler *h_interrupt;
     Timer *h_timer;
     int cycles, total_cycles;
+
+    // handling key presses/releases
     uint8_t joypad; // stores the joypad state
+    int handleKeyEvent(SDL_Event &e);
+    void handleKeyPressed(int key);
+    void handleKeyReleased(int key);
 
 public:
     bool unpaused;
@@ -43,10 +53,8 @@ public:
     void loadMemory(char *rom);
     void initialize();
 
-    int handleKeyEvent(SDL_Event &e);
-    void handleKeyPressed(int key);
-    void handleKeyReleased(int key);
     void handleInput(SDL_Event &e);
+    void handleInterrupts();
     uint8_t readInput(uint8_t val);
 
     void emulate();

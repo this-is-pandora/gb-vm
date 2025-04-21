@@ -39,5 +39,6 @@ file(GLOB SOURCES
 )
 
 add_executable(gbvm ${SOURCES})
+target_include_directories(gbvm PRIVATE ${SDL2_INCLUDE_DIR})
 target_link_libraries(gbvm mingw32 SDL2main SDL2)
 

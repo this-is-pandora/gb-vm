@@ -20,12 +20,11 @@ class InterruptHandler
 {
 private:
     std::shared_ptr<MMU> mmu;
-    CPU *cpu;
-    bool readInterrupt(Interrupts i);
 
 public:
-    InterruptHandler(std::shared_ptr<MMU> mmu, CPU *_cpu);
+    InterruptHandler(std::shared_ptr<MMU> mmu);
+    bool readInterrupt(Interrupts i);
     void handleInterrupts();
     void requestInterrupt(int id);
-    void serviceInterrupt(int id);
+    uint8_t serviceInterrupt(int id);
 };

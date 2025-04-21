@@ -1,24 +1,24 @@
-#include "../include/memory.h"
+#include "memory.h"
 #include <fstream>
 #include <iostream>
 
 using namespace std;
-// total RAM size: 0xFFFF
-
-// work RAM: 0xC000 - 0xDFFF
-// external RAM: 0xA000 - 0xBFFF
-// echo RAM: E000 - FDFF
-// vram: 0x8000 - 9FFF (8kB)
-// IO: 0xFF00 -
-// hram: 0xFF80 - 0xFFFE
+/*
+ * total RAM size: 0xFFFF (65535 bytes or 64KiB)
+ * work RAM: 0xC000 - 0xDFFF
+ * external RAM: 0xA000 - 0xBFFF
+ * echo RAM: E000 - FDFF
+ * vram: 0x8000 - 9FFF (8kB)
+ * IO: 0xFF00 - 0xFF7F
+ * hram: 0xFF80 - 0xFFFE
+ */
 MMU::MMU()
 {
     rom_bank_no = 1;
     ram_bank_no = 0;
     enable_ram = false;
-    memset(&m_ram_banks, 0, sizeof(m_ram_banks));
-    memset(&memory, 0, sizeof(memory));
-    // booting = true;
+    memset(m_ram_banks, 0, sizeof(m_ram_banks));
+    memset(memory, 0, sizeof(memory));
     memory[0xFF05] = 0x00;
     memory[0xFF06] = 0x00;
     memory[0xFF05] = 0x00;
@@ -59,36 +59,27 @@ void MMU::loadROM(char *rom, size_t size)
     // 1. open the rom file
     // 2. read file into the ROM (should take up the first 32kB or so)
     // 3. close file
-    /*memset(m_rom_banks, 0, sizeof(m_rom_banks));
-    FILE *file = fopen(rom, "rb");
-    fread(m_rom_banks, 1, 0x200000, file);
-    fclose(file);*/
     FILE *file = fopen(rom, "rb");
     fread(memory, 1, size, file);
     fclose(file);
 }
 void MMU::loadBootROM()
 {
-    // std::cout << "loading boot ROM..\n";
+    // loadROM("../bin/dmg_boot.bin", 0x100);
+    memmove(cartridge, memory, 0x100);
+    FILE *file = fopen("../bin/dmg_boot.bin", "rb");
     loadROM("../bin/dmg_boot.bin", 0x100);
-    // FILE *file = fopen("../bin/dmg_boot.bin", "rb");
-    // fread(bootloader, 1, 0x100, file);
-    // fclose(file);
+    fclose(file);
 }
-
 void MMU::unloadBootROM()
 {
     // if the BANK register (0xFF50) is set to 1
-    // unmap the boot rom
-    /*
-    if (memory[0xFF50] == 1)
-    {
-        for (int i = 0; i < 256; i++)
-        {
-        }
-    }*/
+    // unmap the bootrom code
+    cout << "unloading bootrom" << endl;
+    if (memory[0xFF50] == 0x01)
+        memmove(memory, cartridge, 0x100);
     // booting = false;
-    exit(EXIT_SUCCESS); // just quit
+    // exit(EXIT_SUCCESS); // just quit
 }
 
 // MBC1 has 125 banks
@@ -122,18 +113,10 @@ uint8_t MMU::readByte(uint16_t addr)
 {
     // below 0x4000 is ROM bank 0.
     // 0x4000 - 0x7FFF may contain any bank other than bank 0
-    /*
-    if (booting)
+    /*if (booting && (addr < 0x0100))
     {
-        if (addr < 0x0100)
-        {
-            return bootloader[addr];
-        }
-        else
-        {
-            return memory[addr];
-        }
-    } */
+        return bootloader[addr];
+    }*/
     if (addr >= 0x4000 && addr <= 0x7FFF)
     {
         // ROM Bank 1..NN, in cartridge
@@ -146,10 +129,12 @@ uint8_t MMU::readByte(uint16_t addr)
         uint16_t n_addr = addr - 0xA000;
         return m_ram_banks[n_addr + (ram_bank_no * 0x2000)];
     }
+    /*
     else if (addr == 0xFF00)
     {
         // TODO: read IO or joypad state
-    }
+
+    } */
     else
     {
         return memory[addr];

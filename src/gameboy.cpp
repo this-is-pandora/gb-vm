@@ -1,5 +1,6 @@
-#include "../include/gameboy.h"
+#include "gameboy.h"
 #include <iostream>
+#include <thread>
 
 GameBoy::GameBoy()
 {
@@ -10,7 +11,7 @@ GameBoy::GameBoy()
 
 GameBoy::~GameBoy()
 {
-    delete cpu;
+    // delete cpu;
     delete gpu;
     // delete mmu;
 }
@@ -25,7 +26,7 @@ void GameBoy::initialize()
     mmu = std::make_shared<MMU>();
     cpu = new CPU(mmu);
     gpu = new GPU(mmu);
-    h_interrupt = new InterruptHandler(mmu, cpu);
+    h_interrupt = new InterruptHandler(mmu);
     h_timer = new Timer(mmu);
     loadMemory("../bin/Tetris.gb");
     gpu->initGraphics();
@@ -68,7 +69,6 @@ int GameBoy::handleKeyEvent(SDL_Event &e)
 
 void GameBoy::handleKeyPressed(int key)
 {
-    // TODO: finish
     joypad &= ~(1 << key);
 }
 
@@ -93,6 +93,53 @@ void GameBoy::handleInput(SDL_Event &e)
                 handleKeyReleased(key);
             }
         }
+        mmu->writeByte(0xFF00, joypad);
+    }
+}
+void GameBoy::handleInterrupts()
+{
+    if (mmu->interruptsEnabled())
+    {
+        if (mmu->readByte(IE) & mmu->readByte(IER))
+        {
+            uint16_t _pc, _sp;
+            // v-blank
+            if (h_interrupt->readInterrupt(VBLANK))
+            {
+                _pc = h_interrupt->serviceInterrupt(VBLANK);
+                _sp = cpu->getSP();
+                mmu->push(cpu->getPC(), _sp);
+                cpu->setSP(_sp);
+                cpu->setPC(_pc);
+            }
+            // lcd
+            if (h_interrupt->readInterrupt(LCD))
+            {
+                _pc = h_interrupt->serviceInterrupt(LCD);
+                _sp = cpu->getSP();
+                mmu->push(cpu->getPC(), _sp);
+                cpu->setSP(_sp);
+                cpu->setPC(_pc);
+            }
+            // timer
+            if (h_interrupt->readInterrupt(TIMER))
+            {
+                _pc = h_interrupt->serviceInterrupt(TIMER);
+                _sp = cpu->getSP();
+                mmu->push(cpu->getPC(), _sp);
+                cpu->setSP(_sp);
+                cpu->setPC(_pc);
+            }
+            // joypad
+            if (h_interrupt->readInterrupt(JOYPAD))
+            {
+                _pc = h_interrupt->serviceInterrupt(JOYPAD);
+                _sp = cpu->getSP();
+                mmu->push(cpu->getPC(), _sp);
+                cpu->setSP(_sp);
+                cpu->setPC(_pc);
+            }
+        }
     }
 }
 
@@ -103,13 +150,10 @@ void GameBoy::emulate()
     {
         cycles = cpu->tick(); // step the CPU
         total_cycles += cycles;
-        gpu->tick(cycles); // step the GPU
-        // handle timers
-        if (h_timer->clockEnabled())
-            h_timer->handleTimers(cycles, h_interrupt);
-        // do interrupts
-        if (mmu->interruptsEnabled())
-            h_interrupt->handleInterrupts();
+        gpu->tick(cycles);           // step the GPU
+        if (h_timer->clockEnabled()) // handle timers
+            h_timer->handleTimers(cycles);
+        handleInterrupts(); // do interrupts
     }
     else
         total_cycles = 0;

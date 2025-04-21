@@ -1,7 +1,6 @@
-// #include SDL2
 #define SDL_MAIN_HANDLED
-#include "../SDL2/include/SDL2/SDL.h"
-#include "../include/gameboy.h"
+#include "SDL.h"
+#include "gameboy.h"
 /*
  * takes in a rom file as an argument
  * command line example: gbvm tetris.rom

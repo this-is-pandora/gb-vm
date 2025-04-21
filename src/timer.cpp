@@ -1,11 +1,11 @@
-#include "../include/timer.h"
+#include "timer.h"
 
 Timer::Timer(std::shared_ptr<MMU> memory) : memory(memory)
 {
     // memory = memory;
 }
 
-void Timer::handleTimers(int cycles, InterruptHandler *interruptHandler)
+void Timer::handleTimers(int cycles)
 {
     // memory->incDIV();
     handleDivider(cycles);
@@ -21,7 +21,7 @@ void Timer::handleTimers(int cycles, InterruptHandler *interruptHandler)
             if (memory->readByte(TIMA) >= 0xFF)
             {
                 // request Timer interrupt
-                interruptHandler->requestInterrupt(TIMER);
+                // interruptHandler->requestInterrupt(TIMER);
                 // set timer to modulo
                 memory->writeByte(TIMA, memory->readByte(TMA));
             }

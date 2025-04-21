@@ -32,7 +32,7 @@ union Register
 
 class CPU
 {
-    friend class InterruptHandler;
+    // friend class InterruptHandler;
 
 private:
     Register AF, BC, DE, HL;
@@ -40,7 +40,6 @@ private:
     uint16_t pc; // will be 0x0100 after booting sequence
     // MMU *mmu;                       // memory management unit
     std::shared_ptr<MMU> mmu;
-
     // 256 opcodes & # of clock cycles each takes to execute
     // TODO: merge these 2 arrays into one?
     uint8_t op_cycles[0x100] = {
@@ -160,18 +159,23 @@ private:
     void CPU_RETI();
     // fetch, decode, execute
     uint8_t fetch();              // read pc & return opcode
-    int execute(uint8_t opcode);  // decode opcode & execute
     void executeExtendedOpcode(); // if opcode starts w/ 0xCB
 
 public:
     // CPU(MMU *mmu);
     CPU(std::shared_ptr<MMU> mmu);
     ~CPU();
-
     void status();
     uint16_t getPC();
+    void setPC(uint16_t _pc);
+
     uint16_t getSP();
+    void setSP(uint16_t _sp);
+
+    void setB(); // set the B register - for testing purposes only
+    uint8_t getB();
     uint16_t getOP();
+
     // flag methods
     bool getZeroFlag() const;
     void setZeroFlag(bool val);
@@ -190,6 +194,8 @@ public:
     // save & load
     void saveState();
     void loadState();
+    // execute code
+    int execute(uint8_t opcode);
     // run the CPU
     int tick();
 };

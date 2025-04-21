@@ -40,7 +40,6 @@ Screenshots:
 <img width="877" alt="booting" src="https://github.com/this-is-pandora/gb-vm/assets/32402885/647e84a5-e099-4a1c-ad04-dff6e9697864">
 
 Useful resources:
-
 https://gbdev.io/pandocs/
 
 https://fms.komkon.org/EMUL8/HOWTO.html

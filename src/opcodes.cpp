@@ -1,9 +1,9 @@
-#include "../include/cpu.h"
+#include "cpu.h"
 
 // cpu control instructions
 void CPU::CPU_NOP()
 {
-    pc++;
+    // pc++;
 }
 
 void CPU::CPU_STOP()
@@ -213,21 +213,21 @@ void CPU::CPU_8BIT_INC(uint8_t &reg)
 
 void CPU::CPU_8BIT_DEC(uint8_t &reg)
 {
-    // AF.lo = 0;
-    uint8_t val = reg - 1;
     setSubtractFlag(true);
+    if ((reg & 0xf) == 0)
+    {
+        setHalfCarryFlag(true);
+    }
+    else
+    {
+        setHalfCarryFlag(false);
+    }
+    reg -= 1;
     // z-flag
-    if (val == 0)
+    if (reg == 0)
         setZeroFlag(true);
     else
         setZeroFlag(false);
-
-    // half-carry flag
-    if ((reg & 0x0F) == 0)
-        setHalfCarryFlag(true);
-    else
-        setHalfCarryFlag(false);
-    reg -= 1;
 }
 
 void CPU::CPU_8BIT_ADC(uint8_t reg)
@@ -242,7 +242,13 @@ void CPU::CPU_SBC(uint8_t reg)
 
 void CPU::CPU_8BIT_CP(uint8_t reg, uint8_t cp)
 {
-    uint8_t val = reg - cp;
+    uint8_t val;
+    /*
+    if (reg < cp)
+        val = 0;
+    else
+        val = reg - cp;*/
+    val = reg - cp;
     AF.lo = 0;
     // 0 flag
     if (val == 0)
@@ -300,22 +306,6 @@ void CPU::CPU_16BIT_INC(uint16_t &reg)
 
 void CPU::CPU_16BIT_DEC(uint16_t &reg)
 {
-    // AF.lo = 0;
-    //  0 flag
-    /*
-    if ((reg - 1) == 0)
-        setZeroFlag(true);
-    else
-        setZeroFlag(false);
-    // subtract flag
-    setSubtractFlag(true);
-    // half-carry flag
-    uint8_t test = reg & 0xF;
-    test -= (1 & 0xF);
-    if (test < 0)
-        setHalfCarryFlag(true);
-    else
-        setHalfCarryFlag(false); */
     reg--;
 }
 

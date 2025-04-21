@@ -1,10 +1,10 @@
 enable_testing()
 set(SOURCES
-    main_tests.cpp
-    register_tests.h
-    flag_tests.h
-    memory_tests.h
-    instruction_tests.h
+    test_main.cpp
+    test_regs.h
+    test_flags.h
+    test_mem.h
+    test_ops.h
     ../src/opcodes.cpp
     ../src/cpu.cpp
     ../src/memory.cpp
@@ -16,8 +16,8 @@ set(SOURCES
     ../include/timer.h
 )
 
-add_executable(main_tests ${SOURCES})
+add_executable(tests ${SOURCES})
 
-target_link_libraries(main_tests GTest::gtest_main)
+target_link_libraries(tests GTest::gtest_main)
 include(GoogleTest)
-gtest_discover_tests(main_tests)
+gtest_discover_tests(tests)

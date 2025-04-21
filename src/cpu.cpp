@@ -1,5 +1,6 @@
-#include "../include/cpu.h"
+#include "cpu.h"
 #include <iostream>
+#include <thread>
 
 CPU::CPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
 {
@@ -17,6 +18,7 @@ CPU::CPU(std::shared_ptr<MMU> mmu) : mmu(mmu)
     cpuHalted = false;
     debugMode = false;
     pc = 0x0;
+    // pc = 0x100;
     sp = 0x0;
     pendingDisable = false;
     pendingEnable = false;
@@ -38,16 +40,27 @@ void CPU::status()
     printf("c_flag = %u\n", getCarryFlag());
     printf("h_flag = %u\n", getHalfCarryFlag());
     printf("n_flag = %u\n", getSubtractFlag());
-    printf("z_flag = %u\n", getZeroFlag());
+    printf("z_flag = %u\n\n", getZeroFlag());
 }
+
 uint16_t CPU::getPC()
 {
     return pc;
 }
 
+void CPU::setPC(uint16_t _pc)
+{
+    pc = _pc;
+}
+
 uint16_t CPU::getSP()
 {
     return sp;
+}
+
+void CPU::setSP(uint16_t _sp)
+{
+    sp = _sp;
 }
 
 uint16_t CPU::getOP()
@@ -156,7 +169,6 @@ uint8_t CPU::fetch()
 // TODO: instructions to test: 0x20, 0x90, 0xF0, 0xFE
 int CPU::execute(uint8_t opcode)
 {
-    // printf("OpCode: %.2X\n", opcode);
     bool ext_op = false; // place holder code for now
     switch (opcode)
     {
@@ -186,13 +198,6 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0x08: // TODO: LD nn, sp
     {
-        /*
-            uint16_t nn = readWord(++pc);
-            nn = nn << 8;
-            nn |= readWord(pc);
-            pc += 2;
-            nn++;
-            CPU_16BIT_ROM_LD(nn, sp); */
         uint16_t nn = readWord(pc);
         pc += 2;
         writeByte(nn++, sp);
@@ -274,6 +279,8 @@ int CPU::execute(uint8_t opcode)
     case 0x20: // TODO: check JR NZ, *
     {
         int8_t n = (int8_t)readByte(pc); // TODO check
+        // printf("B Reg: %.2X\n", BC.hi);
+        // printf("Z-Flag: %d\n", getZeroFlag());
         if (getZeroFlag() == false)
             CPU_JR(n);
         else
@@ -975,9 +982,9 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xE0: // TODO: test
     {
-        uint8_t n = readByte(pc);
-        pc++;
-        writeByte((0xFF00 + n), AF.hi);
+        uint8_t n = readByte(pc++);
+        uint16_t addr = 0xFF00 + n;
+        writeByte(addr, AF.hi);
     }
     break;
     case 0xE1:
@@ -1035,9 +1042,13 @@ int CPU::execute(uint8_t opcode)
         break;
     case 0xF0:
     {
-        uint8_t n = readByte(pc); // TODO: check
-        pc++;
-        CPU_REG_ROM_LD(AF.hi, (0xFF00 + n));
+        /*
+        uint8_t n = readByte(pc++); // TODO: check
+        // pc++;
+        CPU_REG_ROM_LD(AF.hi, (0xFF00 + n));*/
+        uint8_t n = readByte(pc++);
+        uint16_t addr = 0xFF00 + n;
+        AF.hi = readByte(addr);
     }
     break;
     case 0xF1:
@@ -1136,8 +1147,8 @@ int CPU::tick()
 void CPU::executeExtendedOpcode()
 {
     uint8_t op = readByte(pc++); // TODO: Test for correctness
-    // printf("ExtOpcode: %.2X\n", op);
-    //  pc += 2;
+    // printf("ExtOpcode: CB%.2X\n", op);
+    //   pc += 2;
     switch (op)
     {
     // RLC n

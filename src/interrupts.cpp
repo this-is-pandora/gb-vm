@@ -1,15 +1,15 @@
-#include "../include/interrupts.h"
+#include "interrupts.h"
 
-InterruptHandler::InterruptHandler(std::shared_ptr<MMU> mmu, CPU *_cpu) : mmu(mmu)
+InterruptHandler::InterruptHandler(std::shared_ptr<MMU> mmu) : mmu(mmu)
 {
     // mmu = mmu;
-    cpu = _cpu;
 }
 
 bool InterruptHandler::readInterrupt(Interrupts i)
 {
     return ((mmu->readByte(IE) & i) & (mmu->readByte(IER) & i)) ? true : false;
 }
+
 // TODO: check
 void InterruptHandler::requestInterrupt(int id)
 {
@@ -18,32 +18,34 @@ void InterruptHandler::requestInterrupt(int id)
     mmu->writeByte(IER, data);
 }
 
-void InterruptHandler::serviceInterrupt(int id)
+uint8_t InterruptHandler::serviceInterrupt(int id)
 {
     // disable interrupt
     // change IER so cpu knows interrupt has been serviced
+    uint8_t pc = 0x0;
     mmu->enableInterrupts(false);
     uint8_t reqs = mmu->readByte(IER);
     reqs &= ~(1 << id);
     mmu->writeByte(IER, reqs);
-    mmu->push(cpu->pc, cpu->sp);
+    // mmu->push(cpu->pc, cpu->sp);
     switch (id)
     {
     case VBLANK:
-        cpu->pc = 0x40;
+        pc = 0x40;
         break;
     case LCD:
-        cpu->pc = 0x48;
+        pc = 0x48;
         break;
     case TIMER:
-        cpu->pc = 0x50;
+        pc = 0x50;
         break;
     case JOYPAD:
-        cpu->pc = 0x60;
+        pc = 0x60;
         break;
     default:
         break;
     }
+    return pc;
 }
 
 void InterruptHandler::handleInterrupts()

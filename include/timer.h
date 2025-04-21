@@ -40,7 +40,7 @@ private:
 
 public:
     Timer(std::shared_ptr<MMU> memory);
-    void handleTimers(int cycles, InterruptHandler *interruptHandler);
+    void handleTimers(int cycles);
     void handleDivider(int cycles);
     bool clockEnabled();
     uint8_t readClockFrequency();

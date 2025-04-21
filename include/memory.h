@@ -21,10 +21,8 @@ private:
     uint8_t ram_bank_no; // ram bank currently in use
     uint8_t m_rom_banks[0x200000];
     uint8_t m_ram_banks[0x8000];
-
-    // uint8_t bootloader[0x100]; // stores booting code
     uint8_t memory[0x10000]; // 65536 bytes
-    bool booting;
+    uint8_t cartridge[0x100];
     bool MBC1, MBC2, MBC3;
     bool enable_ram;
     bool rom_banking;
